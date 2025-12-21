@@ -7,17 +7,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /* ROM - Read Only Memory (Mémoire Programme) */
-    public class ROM extends JFrame {
+public class ROM extends JFrame {
 
     private static final long serialVersionUID = 1L;
-
-    //  CONSTANTES DE CONFIGURATION
 
     private static final int ROM_START = 0xFC00;
     private static final int ROM_END = 0xFFFF;
     private static final int ROM_SIZE = ROM_END - ROM_START + 1;
     private static final String DEFAULT_VALUE = "FF";
-
     private static final Color BG_DARK = new Color(25, 25, 28);
     private static final Color BG_DARKER = new Color(18, 18, 20);
     private static final Color ORANGE_PRIMARY = new Color(255, 140, 0);
@@ -27,13 +24,9 @@ import javax.swing.table.DefaultTableModel;
     private static final Color GRID_COLOR = new Color(60, 60, 65);
     private static final Color SELECTION_BG = new Color(255, 140, 0, 50);
     private static final Color HEADER_BG = new Color(40, 40, 45);
-
-    //  MODÈLE DE DONNÉES ET TABLE
-
     private final DefaultTableModel model;
     private final JTable table;
 
-    //  CONSTRUCTEUR
 
     public ROM() {
         setTitle(" ROM - Mémoire Programme");
@@ -153,14 +146,13 @@ import javax.swing.table.DefaultTableModel;
                 "0x%04X → 0x%04X • %d bytes",
                 ROM_START, ROM_END, ROM_SIZE
         ));
-        infoLabel.setFont(new Font("JetBrains Mono", Font.BOLD, 9));  // ✅ Plus petit
+        infoLabel.setFont(new Font("JetBrains Mono", Font.BOLD, 9)); 
         infoLabel.setForeground(TEXT_ORANGE);
         panel.add(infoLabel);
 
         return panel;
     }
 
-    //  MÉTHODES PUBLIQUES
     public DefaultTableModel getModel() {
         return model;
     }
