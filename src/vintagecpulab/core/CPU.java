@@ -17,12 +17,12 @@ public class CPU {
     public static final int V_FLAG = 0x02;
     public static final int Z_FLAG = 0x04;
     public static final int N_FLAG = 0x08;
-    public static final int I_FLAG = 0x10;  // IRQ Mask
-    public static final int H_FLAG = 0x20;  // Half Carry
-    public static final int F_FLAG = 0x40;  // FIRQ Mask
-    public static final int E_FLAG = 0x80;  // Entire State
+    public static final int I_FLAG = 0x10;  
+    public static final int H_FLAG = 0x20;  
+    public static final int F_FLAG = 0x40;  
+    public static final int E_FLAG = 0x80;  
 
-    //     GETTERS / SETTERS
+    
     public int getPC() {
         return PC;
     }
@@ -117,7 +117,7 @@ public class CPU {
         return (CC & flag) != 0;
     }
 
-    // Méthodes individuelles pour chaque flag
+
     public boolean getFlagC() { return getFlag(C_FLAG); }
     public boolean getFlagV() { return getFlag(V_FLAG); }
     public boolean getFlagZ() { return getFlag(Z_FLAG); }
@@ -136,7 +136,7 @@ public class CPU {
     public void setFlagF(boolean value) { setFlag(F_FLAG, value); }
     public void setFlagE(boolean value) { setFlag(E_FLAG, value); }
 
-    //    UTILITAIRES
+    
     public static int hexToDecimal(String hex) {
         try {
             return Integer.parseInt(hex, 16);
@@ -154,7 +154,7 @@ public class CPU {
     }
 
     public void reset() {
-        PC = 0xFC00;    // COMMENCE À L'ADRESSE ROM
+        PC = 0xFC00;    
         X = 0;
         Y = 0;
         S = 0;
@@ -162,10 +162,10 @@ public class CPU {
         DP = 0;
         A = 0;
         B = 0;
-        CC = 0x04;      // FLAG Z À 1 PAR DÉFAUT (tous les registres à 0)
+        CC = 0x04;      
     }
 
-    //     DEBUGGING
+
     @Override
     public String toString() {
         return String.format(
