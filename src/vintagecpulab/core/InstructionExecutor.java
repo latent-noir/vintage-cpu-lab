@@ -2278,7 +2278,7 @@ public class InstructionExecutor {
 
             if (address == null) {
                 throw new IllegalArgumentException(
-                        "⚠️  Étiquette non définie: " + op
+                        "Étiquette non définie: " + op
                 );
             }
 
