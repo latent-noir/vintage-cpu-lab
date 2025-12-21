@@ -33,7 +33,6 @@ public class Editeur {
         bottom.add(closeBtn);
         editorFrame.add(bottom, BorderLayout.SOUTH);
 
-        // Viewer
         viewerFrame = new JFrame("Programme - Visualisation");
         viewerFrame.setSize(600, 500);
         viewerFrame.setLayout(new BorderLayout());
