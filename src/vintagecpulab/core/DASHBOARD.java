@@ -290,7 +290,7 @@ public class DASHBOARD extends JFrame {
         if (confirm == JOptionPane.YES_OPTION) {
             assemblerCodeArea.setText("");
             editeur.clearEditor();
-            logConsole("✓ Nouveau fichier créé.");
+            logConsole("Nouveau fichier créé.");
         }
     }
 
@@ -339,13 +339,12 @@ public class DASHBOARD extends JFrame {
             if (programManager.assemble()) {
                 logConsole(" Assemblage terminé avec succès");
 
-                //  AFFICHAGE DÉTAILLÉ DES OCTETS EN ROM
+            
                 logConsole("CONTENU DE LA ROM (OCTETS GÉNÉRÉS):");
 
                 int totalBytes = 0;
                 int startAddr = cpu.getPC();
 
-                // Parcourir la ROM et afficher tous les octets jusqu'au premier FF
                 for (int addr = startAddr; addr < startAddr + 100; addr++) {
                     String byteValue = romWindow.read(addr);
 
@@ -353,7 +352,7 @@ public class DASHBOARD extends JFrame {
                         totalBytes++;
                         logConsole(String.format("  $%04X: %s", addr, byteValue));
                     } else {
-                        // Premier FF trouvé = fin du programme
+                        
                         break;
                     }
                 }
@@ -363,10 +362,8 @@ public class DASHBOARD extends JFrame {
                         programManager.getLastAssembledBytes());
                 editeur.setEditorText(code);
 
-                // Passer le CPU pour synchronisation automatique
                 programmeWindow.loadFromProgramManager(programManager, cpu);
 
-                // Surligner la première instruction
                 programmeWindow.highlightFromCPU(cpu);
 
                 programmeWindow.setVisible(true);
@@ -405,7 +402,6 @@ public class DASHBOARD extends JFrame {
         }
     }
 
-    //PAS À PAS
     private void handleStep(ActionEvent e) {
         try {
             int pcBefore = cpu.getPC();
@@ -437,7 +433,6 @@ public class DASHBOARD extends JFrame {
         }
     }
 
-    //RESET
     private void handleReset(ActionEvent e) {
         programManager.reset();
 
@@ -452,7 +447,7 @@ public class DASHBOARD extends JFrame {
         if (programmeWindow != null) {
             programmeWindow.resetHighlight();
             if (programManager.isProgramLoaded()) {
-                // Passer le CPU lors du reload
+                
                 programmeWindow.loadFromProgramManager(programManager, cpu);
                 programmeWindow.highlightFromCPU(cpu);
             } else {
