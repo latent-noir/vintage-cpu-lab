@@ -2,19 +2,17 @@ package vintagecpulab.core;
 
 import javax.swing.table.DefaultTableModel;
 
-/**
- * EXÉCUTEUR D'INSTRUCTIONS MOTOROLA 6809 - VERSION OPTIMALE FUSIONNÉE
- */
+/* EXÉCUTEUR D'INSTRUCTIONS MOTOROLA 6809 */
 public class InstructionExecutor {
 
-    // ATTRIBUTS
+    
     private final CPU cpu;
     private  final LabelManager labelManager;
     private final DefaultTableModel ramModel;
     private final DefaultTableModel romModel;
-    private int romAddress = 0; // Position d'écriture en ROM pour l'assembleur
+    private int romAddress = 0; 
 
-    // CONSTRUCTEUR
+    
     public InstructionExecutor(CPU cpu, DefaultTableModel ramModel, DefaultTableModel romModel) {
         this.cpu = cpu;
         this.ramModel = ramModel;
@@ -22,11 +20,8 @@ public class InstructionExecutor {
         this.labelManager = new LabelManager();
     }
 
-    // POINT D'ENTRÉE PRINCIPAL - EXÉCUTION
+    
 
-    /**
-     * Exécute une instruction décodée
-     */
     public void execute(InstructionDecoder.DecodedInstruction instr) {
         if (instr == null) {
             throw new IllegalArgumentException("Instruction nulle");
@@ -36,10 +31,7 @@ public class InstructionExecutor {
         InstructionDecoder.AddressingMode mode = instr.mode;
         String operand = instr.operand;
 
-        // DISPATCH PAR INSTRUCTION
-
         switch (mnemonic) {
-            // LOAD INSTRUCTIONS (8 registres)
             case "LDA" -> execLDA(mode, operand);
             case "LDB" -> execLDB(mode, operand);
             case "LDD" -> execLDD(mode, operand);
@@ -47,7 +39,6 @@ public class InstructionExecutor {
             case "LDY" -> execLDY(mode, operand);
             case "LDU" -> execLDU(mode, operand);
             case "LDS" -> execLDS(mode, operand);
-            // STORE INSTRUCTIONS
             case "STA" -> execSTA(mode, operand);
             case "STB" -> execSTB(mode, operand);
             case "STD" -> execSTD(mode, operand);
@@ -55,12 +46,10 @@ public class InstructionExecutor {
             case "STY" -> execSTY(mode, operand);
             case "STU" -> execSTU(mode, operand);
             case "STS" -> execSTS(mode, operand);
-            // LOAD EFFECTIVE ADDRESS (LEA)
             case "LEAX" -> execLEAX(operand);
             case "LEAY" -> execLEAY(operand);
             case "LEAS" -> execLEAS(operand);
             case "LEAU" -> execLEAU(operand);
-            // COMPARE INSTRUCTIONS
             case "CMPA" -> execCMPA(mode, operand);
             case "CMPB" -> execCMPB(mode, operand);
             case "CMPD" -> execCMPD(mode, operand);
@@ -68,19 +57,16 @@ public class InstructionExecutor {
             case "CMPY" -> execCMPY(mode, operand);
             case "CMPU" -> execCMPU(mode, operand);
             case "CMPS" -> execCMPS(mode, operand);
-            // ADDITION INSTRUCTIONS
             case "ADDA" -> execADDA(mode, operand);
             case "ADDB" -> execADDB(mode, operand);
             case "ADDD" -> execADDD(mode, operand);
             case "ADCA" -> execADCA(mode, operand);
             case "ADCB" -> execADCB(mode, operand);
-            // SUBTRACTION INSTRUCTIONS
             case "SUBA" -> execSUBA(mode, operand);
             case "SUBB" -> execSUBB(mode, operand);
             case "SUBD" -> execSUBD(mode, operand);
             case "SBCA" -> execSBCA(mode, operand);
             case "SBCB" -> execSBCB(mode, operand);
-            // LOGICAL INSTRUCTIONS
             case "ANDA" -> execANDA(mode, operand);
             case "ANDB" -> execANDB(mode, operand);
             case "ANDCC" -> execANDCC(operand);
@@ -89,55 +75,45 @@ public class InstructionExecutor {
             case "ORCC" -> execORCC(operand);
             case "EORA" -> execEORA(mode, operand);
             case "EORB" -> execEORB(mode, operand);
-            // BIT TEST INSTRUCTIONS
             case "BITA" -> execBITA(mode, operand);
             case "BITB" -> execBITB(mode, operand);
-            // INCREMENT/DECREMENT
             case "INCA" -> execINCA();
             case "INCB" -> execINCB();
             case "INC" -> execINC(mode, operand);
             case "DECA" -> execDECA();
             case "DECB" -> execDECB();
             case "DEC" -> execDEC(mode, operand);
-            // CLEAR INSTRUCTIONS
             case "CLRA" -> execCLRA();
             case "CLRB" -> execCLRB();
             case "CLR" -> execCLR(mode, operand);
-            // COMPLEMENT INSTRUCTIONS
             case "COMA" -> execCOMA();
             case "COMB" -> execCOMB();
             case "COM" -> execCOM(mode, operand);
-            // NEGATE INSTRUCTIONS
             case "NEGA" -> execNEGA();
             case "NEGB" -> execNEGB();
             case "NEG" -> execNEG(mode, operand);
-            // TEST INSTRUCTIONS
             case "TSTA" -> execTSTA();
             case "TSTB" -> execTSTB();
             case "TST" -> execTST(mode, operand);
-            // SHIFT INSTRUCTIONS (ASL/ASR/LSL/LSR)
             case "ASLA" -> execASLA();
             case "ASLB" -> execASLB();
             case "ASL" -> execASL(mode, operand);
             case "ASRA" -> execASRA();
             case "ASRB" -> execASRB();
             case "ASR" -> execASR(mode, operand);
-            case "LSLA" -> execASLA(); // LSL = ASL
+            case "LSLA" -> execASLA(); 
             case "LSLB" -> execASLB();
             case "LSL" -> execASL(mode, operand);
             case "LSRA" -> execLSRA();
             case "LSRB" -> execLSRB();
             case "LSR" -> execLSR(mode, operand);
-            // ROTATE INSTRUCTIONS (ROL/ROR)
             case "ROLA" -> execROLA();
             case "ROLB" -> execROLB();
             case "ROL" -> execROL(mode, operand);
             case "RORA" -> execRORA();
             case "RORB" -> execRORB();
             case "ROR" -> execROR(mode, operand);
-            // BRANCH INSTRUCTIONS (Court)
             case "BRA" -> execBRA(operand);
-            //case "BRN" -> execBRN(operand);
             case "BEQ" -> execBEQ(operand);
             case "BNE" -> execBNE(operand);
             case "BCC", "BHS" -> execBCC(operand);
@@ -152,24 +128,19 @@ public class InstructionExecutor {
             case "BLT" -> execBLT(operand);
             case "BHI" -> execBHI(operand);
             case "BLS" -> execBLS(operand);
-            // LONG BRANCH INSTRUCTIONS
             case "LBRA" -> execLBRA(operand);
             case "LBSR" -> execLBSR(operand);
-            // JUMP AND SUBROUTINE
             case "JMP" -> execJMP(mode, operand);
             case "JSR" -> execJSR(mode, operand);
             case "BSR" -> execBSR(operand);
             case "RTS" -> execRTS();
             case "RTI" -> execRTI();
-            // STACK INSTRUCTIONS
             case "PSHS" -> execPSHS(operand);
             case "PSHU" -> execPSHU(operand);
             case "PULS" -> execPULS(operand);
             case "PULU" -> execPULU(operand);
-            // TRANSFER AND EXCHANGE
             case "TFR" -> execTFR(operand);
             case "EXG" -> execEXG(operand);
-            // SPECIAL INSTRUCTIONS
             case "ABX" -> execABX();
             case "MUL" -> execMUL();
             case "SEX" -> execSEX();
@@ -180,7 +151,6 @@ public class InstructionExecutor {
             case "SWI3" -> execSWI3();
             case "CWAI" -> execCWAI(operand);
             case "SYNC" -> execSYNC();
-            // ASSEMBLER DIRECTIVES
             case "ORG" -> execORG(operand);
 
             default -> throw new UnsupportedOperationException(
@@ -189,12 +159,7 @@ public class InstructionExecutor {
         }
     }
 
-    // SECTION: LOAD INSTRUCTIONS
 
-    /**
-     * LDA Load Accumulator A
-     * Flags: N, Z, V=0
-     */
     private void execLDA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         cpu.setA(value & 0xFF);
@@ -203,10 +168,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDB - Load Accumulator B
-     * Flags: N, Z, V=0
-     */
+    
     private void execLDB(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         cpu.setB(value & 0xFF);
@@ -215,10 +177,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDD - Load Accumulator D (A:B)
-     * Flags: N, Z, V=0
-     */
+
     private void execLDD(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setD(value & 0xFFFF);
@@ -227,10 +186,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDX - Load Index Register X
-     * Flags: N, Z, V=0
-     */
+
     private void execLDX(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setX(value & 0xFFFF);
@@ -239,10 +195,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDY - Load Index Register Y
-     * Flags: N, Z, V=0
-     */
+    
     private void execLDY(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setY(value & 0xFFFF);
@@ -251,10 +204,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDU - Load User Stack Pointer
-     * Flags: N, Z, V=0
-     */
+
     private void execLDU(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setU(value & 0xFFFF);
@@ -263,10 +213,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    /**
-     * LDS - Load System Stack Pointer
-     * Flags: N, Z, V=0
-     */
+
     private void execLDS(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setS(value & 0xFFFF);
@@ -275,11 +222,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    // SECTION: STORE INSTRUCTIONS
-    /**
-     * STA - Store Accumulator A
-     * Flags: N, Z, V=0
-     */
+
     private void execSTA(InstructionDecoder.AddressingMode mode, String operand) {
         int address = getEffectiveAddress(mode, operand);
         int value = cpu.getA();
@@ -343,12 +286,6 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    // SECTION: LEA INSTRUCTIONS (Load Effective Address)
-
-    /**
-     * LEAX - Load Effective Address into X
-     * Flags: Z (N, V, C inchangés)
-     */
     private void execLEAX(String operand) {
         int ea = resolveIndexedAddress(operand);
         cpu.setX(ea & 0xFFFF);
@@ -364,21 +301,14 @@ public class InstructionExecutor {
     private void execLEAS(String operand) {
         int ea = resolveIndexedAddress(operand);
         cpu.setS(ea & 0xFFFF);
-        // LEAS ne modifie AUCUN flag
+       
     }
 
     private void execLEAU(String operand) {
         int ea = resolveIndexedAddress(operand);
         cpu.setU(ea & 0xFFFF);
-        // LEAU ne modifie AUCUN flag
     }
 
-    // SECTION: COMPARE INSTRUCTIONS
-    /**
-     * CMPA - Compare Accumulator A
-     * Flags: N, Z, V, C
-     * Effectue A - M sans modifier A
-     */
     private void execCMPA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         int a = cpu.getA();
@@ -456,11 +386,6 @@ public class InstructionExecutor {
         cpu.setFlagV(((s ^ value) & (s ^ result) & 0x8000) != 0);
     }
 
-    // SECTION: ADDITION INSTRUCTIONS
-    /**
-     * ADDA - Add to Accumulator A
-     * Flags: H, N, Z, V, C
-     */
     private void execADDA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         int a = cpu.getA();
@@ -498,11 +423,6 @@ public class InstructionExecutor {
         cpu.setFlagC(result > 0xFFFF);
         cpu.setFlagV(((d ^ result) & (value ^ result) & 0x8000) != 0);
     }
-
-    /**
-     * ADCA - Add with Carry to Accumulator A
-     * Flags: H, N, Z, V, C
-     */
     private void execADCA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         int a = cpu.getA();
@@ -530,9 +450,6 @@ public class InstructionExecutor {
         cpu.setFlagV(((b ^ result) & (value ^ result) & 0x80) != 0);
         cpu.setFlagH(((b & 0x0F) + (value & 0x0F) + carry) > 0x0F);
     }
-
-    // SECTION: SUBTRACTION INSTRUCTIONS
-
     private void execSUBA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         int a = cpu.getA();
@@ -594,8 +511,6 @@ public class InstructionExecutor {
         cpu.setFlagC(result < 0);
         cpu.setFlagV(((b ^ value) & (b ^ result) & 0x80) != 0);
     }
-
-    // SECTION: LOGICAL INSTRUCTIONS
 
     private void execANDA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
@@ -661,7 +576,6 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    // SECTION: BIT TEST INSTRUCTIONS
     private void execBITA(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         int result = cpu.getA() & value;
@@ -677,8 +591,6 @@ public class InstructionExecutor {
         cpu.setFlagN((result & 0x80) != 0);
         cpu.setFlagV(false);
     }
-
-    // SECTION: INCREMENT/DECREMENT
 
     private void execINCA() {
         int result = (cpu.getA() + 1) & 0xFF;
@@ -730,9 +642,7 @@ public class InstructionExecutor {
         cpu.setFlagV(value == 0x7F);
     }
 
-    // SECTION: CLEAR INSTRUCTIONS
-
-    private void execCLRA() {
+  private void execCLRA() {
         cpu.setA(0);
         cpu.setFlagZ(true);
         cpu.setFlagN(false);
@@ -756,8 +666,6 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
         cpu.setFlagC(false);
     }
-
-    // SECTION: COMPLEMENT INSTRUCTIONS
 
     private void execCOMA() {
         int result = (~cpu.getA()) & 0xFF;
@@ -787,8 +695,6 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
         cpu.setFlagC(true);
     }
-
-    // SECTION: NEGATE INSTRUCTIONS
 
     private void execNEGA() {
         int a = cpu.getA();
@@ -821,8 +727,6 @@ public class InstructionExecutor {
         cpu.setFlagV(value == 0x80);
     }
 
-    // SECTION: TEST INSTRUCTIONS
-
     private void execTSTA() {
         int a = cpu.getA();
         cpu.setFlagZ(a == 0);
@@ -844,8 +748,6 @@ public class InstructionExecutor {
         cpu.setFlagN((value & 0x80) != 0);
         cpu.setFlagV(false);
     }
-
-    // SECTION: SHIFT INSTRUCTIONS
 
     private void execASLA() {
         int a = cpu.getA();
@@ -934,8 +836,6 @@ public class InstructionExecutor {
         cpu.setFlagN(false);
     }
 
-    // SECTION: ROTATE INSTRUCTIONS
-
     private void execROLA() {
         int a = cpu.getA();
         int carry = cpu.getFlagC() ? 1 : 0;
@@ -1001,144 +901,83 @@ public class InstructionExecutor {
         cpu.setFlagN((result & 0x80) != 0);
     }
 
-    // SECTION: BRANCH INSTRUCTIONS
-    /**
-     * BRA - Branch Always (déplacement relatif signé 8 bits)
-     */
     private void execBRA(String operand) {
-        // L'opérande contient le déplacement (ex: "$FA" = -6)
         int displacement = parseSignedDisplacement8(operand);
         int pc = cpu.getPC();
-        int target = (pc + 2 + displacement) & 0xFFFF; // BRA = 2 octets
+        int target = (pc + 2 + displacement) & 0xFFFF; 
         cpu.setPC(target);
-
-        System.out.println("🔄 BRA: PC=$" + CPU.decimalToHex(pc, 4) +
-                " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
     }
 
-    /**
-     * BEQ - Branch if Equal (Z=1)
-     */
     private void execBEQ(String operand) {
         if (cpu.getFlagZ()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF; // BEQ = 2 octets
             cpu.setPC(target);
-
-            System.out.println("🔄 BEQ: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BNE - Branch if Not Equal (Z=0)
-     */
     private void execBNE(String operand) {
         if (!cpu.getFlagZ()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
-            int target = (pc + 2 + displacement) & 0xFFFF; // BNE = 2 octets
+            int target = (pc + 2 + displacement) & 0xFFFF; 
             cpu.setPC(target);
-
-            System.out.println("🔄 BNE: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BCC - Branch if Carry Clear (C=0)
-     */
     private void execBCC(String operand) {
         if (!cpu.getFlagC()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BCC: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BCS - Branch if Carry Set (C=1)
-     */
     private void execBCS(String operand) {
         if (cpu.getFlagC()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BCS: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BPL - Branch if Plus (N=0)
-     */
+
     private void execBPL(String operand) {
         if (!cpu.getFlagN()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BPL: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BMI - Branch if Minus (N=1)
-     */
     private void execBMI(String operand) {
         if (cpu.getFlagN()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BMI: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BVC - Branch if Overflow Clear (V=0)
-     */
     private void execBVC(String operand) {
         if (!cpu.getFlagV()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BVC: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BVS - Branch if Overflow Set (V=1)
-     */
     private void execBVS(String operand) {
         if (cpu.getFlagV()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BVS: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BGT - Branch if Greater Than (signed: Z=0 AND N=V)
-     */
     private void execBGT(String operand) {
         boolean Z = cpu.getFlagZ();
         boolean N = cpu.getFlagN();
@@ -1148,15 +987,8 @@ public class InstructionExecutor {
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BGT: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BLE - Branch if Less or Equal (signed: Z=1 OR N!=V)
-     */
     private void execBLE(String operand) {
         boolean Z = cpu.getFlagZ();
         boolean N = cpu.getFlagN();
@@ -1166,15 +998,8 @@ public class InstructionExecutor {
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BLE: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BGE - Branch if Greater or Equal (signed: N=V)
-     */
     private void execBGE(String operand) {
         boolean N = cpu.getFlagN();
         boolean V = cpu.getFlagV();
@@ -1183,15 +1008,8 @@ public class InstructionExecutor {
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BGE: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * BLT - Branch if Less Than (signed: N!=V)
-     */
     private void execBLT(String operand) {
         boolean N = cpu.getFlagN();
         boolean V = cpu.getFlagV();
@@ -1200,98 +1018,51 @@ public class InstructionExecutor {
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BLT: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BHI - Branch if Higher (unsigned: C=0 AND Z=0)
-     */
     private void execBHI(String operand) {
         if (!cpu.getFlagC() && !cpu.getFlagZ()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BHI: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
 
-    /**
-     * BLS - Branch if Lower or Same (unsigned: C=1 OR Z=1)
-     */
     private void execBLS(String operand) {
         if (cpu.getFlagC() || cpu.getFlagZ()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
             int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
-
-            System.out.println("🔄 BLS: PC=$" + CPU.decimalToHex(pc, 4) +
-                    " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
         }
     }
-
-    /**
-     * LBRA - Long Branch Always (déplacement 16 bits)
-     */
     private void execLBRA(String operand) {
         int displacement = parseSignedDisplacement16(operand);
         int pc = cpu.getPC();
-        int target = (pc + 3 + displacement) & 0xFFFF; // LBRA = 3 octets
+        int target = (pc + 3 + displacement) & 0xFFFF; 
         cpu.setPC(target);
-
-        System.out.println("🔄 LBRA: PC=$" + CPU.decimalToHex(pc, 4) +
-                " + 3 + " + displacement + " = $" + CPU.decimalToHex(target, 4));
     }
 
-    /**
-     * LBSR - Long Branch to Subroutine
-     */
     private void execLBSR(String operand) {
         int displacement = parseSignedDisplacement16(operand);
         int pc = cpu.getPC();
-        int target = (pc + 3 + displacement) & 0xFFFF; // LBSR = 3 octets
-
-        // Sauvegarder l'adresse de retour
+        int target = (pc + 3 + displacement) & 0xFFFF; 
         int s = cpu.getS();
-        s = pushWord(s, pc + 3); // Adresse de retour = PC + 3
+        s = pushWord(s, pc + 3); 
         cpu.setS(s);
-
         cpu.setPC(target);
-
-        System.out.println("🔄 LBSR: PC=$" + CPU.decimalToHex(pc, 4) +
-                " + 3 + " + displacement + " = $" + CPU.decimalToHex(target, 4) +
-                " retour @ $" + CPU.decimalToHex(pc + 3, 4));
     }
-
-    /**
-     * BSR - Branch to Subroutine (court)
-     */
     private void execBSR(String operand) {
         int displacement = parseSignedDisplacement8(operand);
         int pc = cpu.getPC();
-        int target = (pc + 2 + displacement) & 0xFFFF; // BSR = 2 octets
-
-        // Sauvegarder l'adresse de retour
+        int target = (pc + 2 + displacement) & 0xFFFF; 
         int s = cpu.getS();
-        s = pushWord(s, pc + 2); // Adresse de retour = PC + 2
+        s = pushWord(s, pc + 2); 
         cpu.setS(s);
-
         cpu.setPC(target);
-
-        System.out.println("🔄 BSR: PC=$" + CPU.decimalToHex(pc, 4) +
-                " + 2 + " + displacement + " = $" + CPU.decimalToHex(target, 4) +
-                " retour @ $" + CPU.decimalToHex(pc + 2, 4));
     }
-
-
-
-    // SECTION: JUMP AND SUBROUTINE
 
     private void execJMP(InstructionDecoder.AddressingMode mode, String operand) {
         int target = getEffectiveAddress(mode, operand);
@@ -1334,12 +1105,6 @@ public class InstructionExecutor {
         s = (s + 2) & 0xFFFF;
         cpu.setS(s);
     }
-
-    // SECTION: STACK INSTRUCTIONS
-    /**
-     * PSHS - Push sur pile système
-     * Ordre: PC, U, Y, X, DP, B, A, CC (MSB→LSB)
-     */
     private void execPSHS(String operand) {
         int mask = parseRegisterMask(operand);
         int s = cpu.getS();
@@ -1372,15 +1137,10 @@ public class InstructionExecutor {
         cpu.setU(u);
     }
 
-    /**
-     * PULS - Pull depuis pile système
-     * Ordre inverse: CC, A, B, DP, X, Y, U, PC (LSB→MSB)
-     */
     private void execPULS(String operand) {
         int mask = parseRegisterMask(operand);
         int s = cpu.getS();
 
-        // ORDRE LSB → MSB (bit 0 vers bit 7) - INVERSE de PSHS
         if ((mask & 0x01) != 0) {
             cpu.setCC(pullByte(s));
             s = (s + 1) & 0xFFFF;
@@ -1403,7 +1163,7 @@ public class InstructionExecutor {
 
         if ((mask & 0x10) != 0) {
             cpu.setX(pullWord(s));
-            s = (s + 2) & 0xFFFF; // +2 car 16 bits
+            s = (s + 2) & 0xFFFF; 
         }
 
         if ((mask & 0x20) != 0) {
@@ -1428,7 +1188,6 @@ public class InstructionExecutor {
         int mask = parseRegisterMask(operand);
         int u = cpu.getU();
 
-        // ORDRE LSB → MSB (inverse de PSHU)
         if ((mask & 0x01) != 0) {
             cpu.setCC(pullByte(u));
             u = (u + 1) & 0xFFFF;
@@ -1460,7 +1219,7 @@ public class InstructionExecutor {
         }
 
         if ((mask & 0x40) != 0) {
-            cpu.setS(pullWord(u)); // S au lieu de U!
+            cpu.setS(pullWord(u)); 
             u = (u + 2) & 0xFFFF;
         }
 
@@ -1473,7 +1232,6 @@ public class InstructionExecutor {
     }
 
 
-    // SECTION: TRANSFER AND EXCHANGE
 
     private void execTFR(String operand) {
         String[] regs = operand.split(",");
@@ -1500,11 +1258,9 @@ public class InstructionExecutor {
         setRegisterValue(reg2, val1);
     }
 
-    // SECTION: SPECIAL INSTRUCTIONS
     private void execABX() {
         int result = (cpu.getX() + cpu.getB()) & 0xFFFF;
         cpu.setX(result);
-        // ABX ne modifie AUCUN flag
     }
 
     private void execMUL() {
@@ -1573,19 +1329,12 @@ public class InstructionExecutor {
         romAddress = CPU.hexToDecimal(operand);
     }
 
-    // SECTION: ROM MANAGEMENT (Pour l'assembleur)
-    /**
-     * Génère le code machine (opcodes + opérandes) en ROM
-     * Cette méthode est utilisée par l'assembleur
-     */
     public void emitToROM(InstructionDecoder.DecodedInstruction instr) {
-        // 1. Émettre les opcodes
         int[] opcodes = getOpcodeSequence(instr);
         for (int opcode : opcodes) {
             writeOpcodeToROM(opcode);
         }
 
-        // 2. Émettre les opérandes
         switch (instr.mode) {
             case IMMEDIATE -> {
                 char reg = instr.targetRegister;
@@ -1633,11 +1382,6 @@ public class InstructionExecutor {
         }
     }
 
-    /**
-     * Calcule la taille en octets d'une instruction complète
-     */
-
-
     public void resetRomAddress() {
         romAddress = 0;
     }
@@ -1667,17 +1411,11 @@ public class InstructionExecutor {
         }
     }
 
-    // SECTION: OPCODE TABLE
-
-    /**
-     * Retourne la séquence d'opcodes pour une instruction
-     */
     public int[] getOpcodeSequence(InstructionDecoder.DecodedInstruction instr) {
         String m = instr.operation.toUpperCase();
         InstructionDecoder.AddressingMode mode = instr.mode;
 
         return switch (m) {
-            // LOAD INSTRUCTIONS
             case "LDA" -> switch (mode) {
                 case IMMEDIATE -> new int[]{0x86};
                 case DIRECT -> new int[]{0x96};
@@ -1728,7 +1466,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // STORE INSTRUCTIONS
             case "STA" -> switch (mode) {
                 case DIRECT -> new int[]{0x97};
                 case INDEXED -> new int[]{0xA7};
@@ -1772,13 +1509,11 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // LEA INSTRUCTIONS
             case "LEAX" -> new int[]{0x30};
             case "LEAY" -> new int[]{0x31};
             case "LEAS" -> new int[]{0x32};
             case "LEAU" -> new int[]{0x33};
 
-            // COMPARE INSTRUCTIONS
             case "CMPA" -> switch (mode) {
                 case IMMEDIATE -> new int[]{0x81};
                 case DIRECT -> new int[]{0x91};
@@ -1829,7 +1564,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // ARITHMETIC
             case "ADDA" -> switch (mode) {
                 case IMMEDIATE -> new int[]{0x8B};
                 case DIRECT -> new int[]{0x9B};
@@ -1901,7 +1635,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // LOGICAL
             case "ANDA" -> switch (mode) {
                 case IMMEDIATE -> new int[]{0x84};
                 case DIRECT -> new int[]{0x94};
@@ -1947,7 +1680,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // BIT TEST
             case "BITA" -> switch (mode) {
                 case IMMEDIATE -> new int[]{0x85};
                 case DIRECT -> new int[]{0x95};
@@ -1963,7 +1695,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // INCREMENT/DECREMENT
             case "INCA" -> new int[]{0x4C};
             case "INCB" -> new int[]{0x5C};
             case "INC" -> switch (mode) {
@@ -1981,7 +1712,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // CLEAR
             case "CLRA" -> new int[]{0x4F};
             case "CLRB" -> new int[]{0x5F};
             case "CLR" -> switch (mode) {
@@ -1991,7 +1721,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // COMPLEMENT
             case "COMA" -> new int[]{0x43};
             case "COMB" -> new int[]{0x53};
             case "COM" -> switch (mode) {
@@ -2001,7 +1730,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // NEGATE
             case "NEGA" -> new int[]{0x40};
             case "NEGB" -> new int[]{0x50};
             case "NEG" -> switch (mode) {
@@ -2011,7 +1739,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // TEST
             case "TSTA" -> new int[]{0x4D};
             case "TSTB" -> new int[]{0x5D};
             case "TST" -> switch (mode) {
@@ -2021,7 +1748,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // SHIFT
             case "ASLA", "LSLA" -> new int[]{0x48};
             case "ASLB", "LSLB" -> new int[]{0x58};
             case "ASL", "LSL" -> switch (mode) {
@@ -2047,7 +1773,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // ROTATE
             case "ROLA" -> new int[]{0x49};
             case "ROLB" -> new int[]{0x59};
             case "ROL" -> switch (mode) {
@@ -2065,7 +1790,6 @@ public class InstructionExecutor {
                 default -> new int[]{0x12};
             };
 
-            // BRANCH
             case "BRA" -> new int[]{0x20};
             case "BRN" -> new int[]{0x21};
             case "BHI" -> new int[]{0x22};
@@ -2085,8 +1809,6 @@ public class InstructionExecutor {
             case "LBRA" -> new int[]{0x16};
             case "LBSR" -> new int[]{0x17};
             case "BSR" -> new int[]{0x8D};
-
-            // JUMP
             case "JMP" -> switch (mode) {
                 case DIRECT -> new int[]{0x0E};
                 case INDEXED -> new int[]{0x6E};
@@ -2101,18 +1823,12 @@ public class InstructionExecutor {
             };
             case "RTS" -> new int[]{0x39};
             case "RTI" -> new int[]{0x3B};
-
-            // STACK
             case "PSHS" -> new int[]{0x34};
             case "PSHU" -> new int[]{0x36};
             case "PULS" -> new int[]{0x35};
             case "PULU" -> new int[]{0x37};
-
-            // TRANSFER/EXCHANGE
             case "TFR" -> new int[]{0x1F};
             case "EXG" -> new int[]{0x1E};
-
-            // SPECIAL
             case "ABX" -> new int[]{0x3A};
             case "MUL" -> new int[]{0x3D};
             case "SEX" -> new int[]{0x1D};
@@ -2124,29 +1840,20 @@ public class InstructionExecutor {
             case "CWAI" -> new int[]{0x3C};
             case "SYNC" -> new int[]{0x13};
 
-            default -> new int[]{0x12}; // NOP par défaut
+            default -> new int[]{0x12}; 
         };
     }
 
-    // SECTION: MEMORY ACCESS HELPERS
-
-    /*
-     * Lit un octet depuis la mémoire (RAM ou ROM selon l'adresse)
-     */
     private int readMemoryByte(int address) {
         try {
             address &= 0xFFFF;
-
-            // Déterminer RAM ou ROM
             DefaultTableModel model;
             int offset;
 
             if (address >= 0xFC00) {
-                // Zone ROM
                 model = romModel;
                 offset = address - 0xFC00;
             } else {
-                // Zone RAM
                 model = ramModel;
                 offset = address;
             }
@@ -2164,20 +1871,12 @@ public class InstructionExecutor {
             return 0;
         }
     }
-
-    /**
-     * Lit un mot (16 bits) depuis la RAM
-     * Format big-endian: byte_haut @ address, byte_bas @ address+1
-     */
     private int readMemoryWord(int address) {
         int high = readMemoryByte(address) & 0xFF;
         int low = readMemoryByte((address + 1) & 0xFFFF) & 0xFF;
         return ((high << 8) | low) & 0xFFFF;
     }
 
-    /**
-     * Écrit un octet dans la RAM
-     */
     private void writeMemoryByte(int address, int value) {
         try {
             address &= 0xFFFF;
@@ -2201,19 +1900,11 @@ public class InstructionExecutor {
         }
     }
 
-    /**
-     * Écrit un mot (16 bits) dans la RAM
-     */
     private void writeMemoryWord(int address, int value) {
         writeMemoryByte(address, (value >> 8) & 0xFF);
         writeMemoryByte((address + 1) & 0xFFFF, value & 0xFF);
     }
-
-    // SECTION: OPERAND READING (Selon mode d'adressage)
-
-    /**
-     * Lit une valeur 8-bit selon le mode d'adressage
-     */
+    
     private int readOperand8(InstructionDecoder.AddressingMode mode, String operand) {
         return switch (mode) {
             case IMMEDIATE -> CPU.hexToDecimal(operand) & 0xFF;
@@ -2238,9 +1929,7 @@ public class InstructionExecutor {
         };
     }
 
-    /**
-     * Lit une valeur 16-bit selon le mode d'adressage
-     */
+   
     private int readOperand16(InstructionDecoder.AddressingMode mode, String operand) {
         return switch (mode) {
             case IMMEDIATE -> CPU.hexToDecimal(operand) & 0xFFFF;
@@ -2265,10 +1954,7 @@ public class InstructionExecutor {
         };
     }
 
-    // SECTION: EFFECTIVE ADDRESS CALCULATION
-    /**
-     * Calcule l'adresse effective selon le mode d'adressage
-     */
+
     private int getEffectiveAddress(InstructionDecoder.AddressingMode mode, String operand) {
         return switch (mode) {
             case DIRECT -> ((cpu.getDP() & 0xFF) << 8) | (CPU.hexToDecimal(operand) & 0xFF);
@@ -2286,29 +1972,20 @@ public class InstructionExecutor {
         if (indexedOperand == null) return 0;
 
         String op = indexedOperand.replaceAll("\\s", "").toUpperCase();
-
-        // GESTION DU MODE INDIRECT
         boolean indirect = false;
         if (op.startsWith("[") && op.endsWith("]")) {
             indirect = true;
             op = op.substring(1, op.length() - 1);
         }
-        // PARSING: "offset,registre"
         String[] parts = op.split(",", 2);
         if (parts.length != 2) {
             throw new IllegalArgumentException("Format indexé invalide: " + indexedOperand);
         }
         String offsetStr = parts[0].trim();
         String regStr = parts[1].trim();
-
-        //  CORRECTION 1: Détecter auto-inc/dec AVANT de traiter le registre
-        // Format: ",R+" → offsetStr = "", regStr = "R+"
-        // Format: "5,R"  → offsetStr = "5", regStr = "R"
-
         String baseRegister = regStr;
         String incrementMode = "";
 
-        // Détecter les suffixes/préfixes d'incrémentation
         if (regStr.endsWith("++")) {
             baseRegister = regStr.substring(0, regStr.length() - 2);
             incrementMode = "++";
@@ -2322,13 +1999,11 @@ public class InstructionExecutor {
             baseRegister = regStr.substring(1);
             incrementMode = "-";
         }
-        // VALIDATION DU REGISTRE
         if (!baseRegister.matches("^[XYUS]$")) {
             throw new IllegalArgumentException("Registre indexé invalide: " + baseRegister +
                     " (doit être X, Y, U ou S)");
         }
 
-        // Obtenir la valeur du registre d'index
         int baseAddress = switch (baseRegister) {
             case "X" -> cpu.getX();
             case "Y" -> cpu.getY();
@@ -2338,38 +2013,30 @@ public class InstructionExecutor {
         };
 
         int effectiveAddress = baseAddress;
-
-        // CALCUL DE L'ADRESSE SELON LE TYPE D'OFFSET
         if (offsetStr.isEmpty()) {
 
-            // CAS 1: PAS D'OFFSET (avec ou sans auto-inc/dec)
             switch (incrementMode) {
                 case "+":
-                    // ,R+ (post-incrémentation +1)
                     effectiveAddress = baseAddress;
                     updateIndexRegister(baseRegister, (baseAddress + 1) & 0xFFFF);
                     break;
 
                 case "++":
-                    // ,R++ (post-incrémentation +2)
                     effectiveAddress = baseAddress;
                     updateIndexRegister(baseRegister, (baseAddress + 2) & 0xFFFF);
                     break;
 
                 case "-":
-                    // ,-R (pré-décrémentation -1)
                     effectiveAddress = (baseAddress - 1) & 0xFFFF;
                     updateIndexRegister(baseRegister, effectiveAddress);
                     break;
 
                 case "--":
-                    // ,--R (pré-décrémentation -2)
                     effectiveAddress = (baseAddress - 2) & 0xFFFF;
                     updateIndexRegister(baseRegister, effectiveAddress);
                     break;
 
                 default:
-                    // ,R (pas d'offset ni d'incrémentation)
                     effectiveAddress = baseAddress;
                     break;
             }
@@ -2391,7 +2058,7 @@ public class InstructionExecutor {
         } else if (offsetStr.equals("D")) {
             int dValue = cpu.getD();
             if ((dValue & 0x8000) != 0) {
-                dValue |= 0xFFFF0000; // Extension de signe
+                dValue |= 0xFFFF0000;
             }
             effectiveAddress = (baseAddress + dValue) & 0xFFFF;
 
@@ -2400,7 +2067,6 @@ public class InstructionExecutor {
             int offset;
 
             try {
-                // Parser l'offset (hexadécimal ou décimal)
                 if (offsetStr.contains("$") || offsetStr.matches("^[0-9A-Fa-f]+$")) {
                     // Hexadécimal
                     offset = Integer.parseInt(cleanOffset, 16);
@@ -2430,7 +2096,6 @@ public class InstructionExecutor {
                 );
             }
         }
-        // GESTION DU MODE INDIRECT
         if (indirect) {
             // L'adresse calculée est un pointeur vers l'adresse réelle
             effectiveAddress = readMemoryWord(effectiveAddress);
@@ -2438,9 +2103,7 @@ public class InstructionExecutor {
 
         return effectiveAddress & 0xFFFF;
     }
-    /**
-     * Met à jour un registre d'index (pour auto-inc/dec)
-     */
+   
     private void updateIndexRegister(String register, int newValue) {
         int value = newValue & 0xFFFF;
         switch (register) {
@@ -2451,7 +2114,6 @@ public class InstructionExecutor {
             default -> throw new IllegalArgumentException("Registre invalide: " + register);
         }
     }
-    // SECTION: REGISTER ACCESS HELPERS
     private int getRegisterValue(char register) {
         return switch (register) {
             case 'A' -> cpu.getA();
@@ -2479,25 +2141,18 @@ public class InstructionExecutor {
         }
     }
 
-    // SECTION: STACK HELPERS
-    /**
-     * Empile un octet (décrémente SP puis écrit)
-     */
+
     private int pushByte(int sp, int value) {
         sp = (sp - 1) & 0xFFFF;
         writeMemoryByte(sp, value & 0xFF);
         return sp;
     }
 
-    /**
-     * Empile un mot (décrémente SP deux fois puis écrit MSB puis LSB)
-     */
+
     private int pushWord(int sp, int value) {
-        // ÉTAPE 1: Empiler MSB (high byte) en PREMIER
         sp = (sp - 1) & 0xFFFF;
         writeMemoryByte(sp, (value >> 8) & 0xFF);  // MSB
 
-        // ÉTAPE 2: Empiler LSB (low byte) ensuite
         sp = (sp - 1) & 0xFFFF;
         writeMemoryByte(sp, value & 0xFF);         // LSB
 
@@ -2505,35 +2160,24 @@ public class InstructionExecutor {
     }
 
 
-    /**
-     * Dépile un octet (lit puis incrémente SP)
-     */
+  
     private int pullByte(int sp) {
         return readMemoryByte(sp) & 0xFF;
     }
 
-    /**
-     * Dépile un mot (lit MSB puis LSB)
-     */
+   
     private int pullWord(int sp) {
         int high = readMemoryByte(sp) & 0xFF;
         int low = readMemoryByte((sp + 1) & 0xFFFF) & 0xFF;
         return ((high << 8) | low) & 0xFFFF;
     }
 
-    /**
-     * Parse le masque de registres pour PSHS/PULS/PSHU/PULU
-     * Format: "A,B,X" ou "$FF"
-     * <p>
-     * Bits: 7=PC, 6=U/S, 5=Y, 4=X, 3=DP, 2=B, 1=A, 0=CC
-     */
+    
     private int parseRegisterMask(String operand) {
         operand = operand.replaceAll("\\s*,\\s*", ",").trim();
-        // Vérification de sécurité
         if (operand == null || operand.trim().isEmpty()) {
             throw new IllegalArgumentException("Opérande vide pour PSHS/PULS/PSHU/PULU");
         }
-        // Nettoyer l'opérande
         operand = operand.trim();
         if (operand.startsWith("$") || operand.startsWith("#")) {
             String hex = operand
@@ -2551,35 +2195,29 @@ public class InstructionExecutor {
             }
         }
 
-        // CAS 2: Liste de registres
         int mask = 0;
 
-        // Séparer par virgules
         String[] regs = operand.toUpperCase().split(",");
 
         for (String reg : regs) {
-            // CRITIQUE: Enlever TOUS les espaces avant et après
             reg = reg.trim();
 
-            // Ignorer les chaînes vides (cas: "A,,,B")
             if (reg.isEmpty()) {
                 continue;
             }
 
-            // Mapper chaque registre à son bit
             int regBit = switch (reg) {
-                case "CC", "CCR" -> 0x01;  // Bit 0 - Condition Code Register
-                case "A" -> 0x02;          // Bit 1 - Accumulateur A
-                case "B" -> 0x04;          // Bit 2 - Accumulateur B
-                case "D" -> 0x06;          // Bits 1+2 - Accumulateur D (A+B)
-                case "DP" -> 0x08;         // Bit 3 - Direct Page Register
-                case "X" -> 0x10;          // Bit 4 - Index Register X
-                case "Y" -> 0x20;          // Bit 5 - Index Register Y
-                case "U" -> 0x40;          // Bit 6 - User Stack Pointer
-                case "S" -> 0x40;          // Bit 6 - System Stack Pointer
-                case "PC" -> 0x80;         // Bit 7 - Program Counter
+                case "CC", "CCR" -> 0x01;  
+                case "A" -> 0x02;          
+                case "B" -> 0x04;          
+                case "D" -> 0x06;
+                case "DP" -> 0x08;         
+                case "X" -> 0x10;          
+                case "Y" -> 0x20;          
+                case "U" -> 0x40;        
+                case "S" -> 0x40;          
+                case "PC" -> 0x80;       
                 default -> {
-                    // Registre non reconnu - afficher erreur claire
                     throw new IllegalArgumentException(
                             "Registre d'index invalide: " + reg +
                                     "\nRegistres valides: CC, A, B, D, DP, X, Y, U, S, PC"
@@ -2590,7 +2228,6 @@ public class InstructionExecutor {
             mask |= regBit;
         }
 
-        // Vérifier que le masque n'est pas vide
         if (mask == 0) {
             throw new IllegalArgumentException(
                     "Aucun registre valide trouvé dans: " + operand
@@ -2611,24 +2248,16 @@ public class InstructionExecutor {
         return labelManager;
     }
 
-    /**
-     * Efface toutes les étiquettes
-     */
     public void clearLabels() {
         labelManager.clear();
     }
 
-    /**
-     * Affiche la table des symboles (pour debug)
-     */
+
     public void printSymbolTable() {
         labelManager.print();
     }
 
-    /**
-     * Résout une étiquette en adresse hexadécimale
-     * Si c'est déjà un nombre, le retourne tel quel
-     */
+
     private String resolveLabel(String operand) {
         if (operand == null || operand.trim().isEmpty()) {
             return operand;
@@ -2636,17 +2265,14 @@ public class InstructionExecutor {
 
         String op = operand.trim();
 
-        // Si c'est déjà un nombre hexadécimal, ne rien faire
         if (op.startsWith("$") || op.startsWith("#")) {
             return operand;
         }
 
-        // Si c'est un nombre hex sans $
         if (op.matches("^[0-9A-Fa-f]+$") && op.length() <= 4) {
             return operand;
         }
 
-        // Si c'est un label, le résoudre
         if (labelManager.isLabelName(op)) {
             Integer address = labelManager.getAddress(op);
 
@@ -2662,37 +2288,29 @@ public class InstructionExecutor {
         return operand;
     }
 
-    /**
-     * Calcule la taille d'une instruction en octets
-     * Nécessaire pour la collecte d'étiquettes (passe 1)
-     */
+
     public int computeInstructionSize(InstructionDecoder.DecodedInstruction instr) {
         if (instr == null) return 0;
 
         String mnemonic = instr.operation;
         InstructionDecoder.AddressingMode mode = instr.mode;
 
-        // Instructions inhérentes (1 octet)
         if (mnemonic.matches("NOP|RTS|RTI|SWI|INCA|INCB|DECA|DECB|CLRA|CLRB|COMA|COMB|NEGA|NEGB|ASLA|ASLB|ASRA|ASRB|LSLA|LSLB|LSRA|LSRB|ROLA|ROLB|RORA|RORB|DAA|SEX|ABX|MUL")) {
             return 1;
         }
 
-        // PSHS/PULS/PSHU/PULU (2 octets: opcode + postbyte)
         if (mnemonic.matches("PSHS|PULS|PSHU|PULU")) {
             return 2;
         }
 
-        // TFR/EXG (2 octets: opcode + postbyte)
         if (mnemonic.matches("TFR|EXG")) {
             return 2;
         }
 
-        // Branches courtes (2 octets: opcode + offset 8 bits)
         if (mnemonic.matches("BRA|BRN|BEQ|BNE|BCC|BCS|BPL|BMI|BVC|BVS|BGT|BLE|BGE|BLT|BHI|BLS|BSR")) {
             return 2;
         }
 
-        // Branches longues (3 octets: opcode + offset 16 bits)
         if (mnemonic.matches("LBRA|LBSR|LBEQ|LBNE|LBCC|LBCS|LBPL|LBMI|LBVC|LBVS|LBGT|LBLE|LBGE|LBLT|LBHI|LBLS")) {
             return 3;
         }
@@ -2700,53 +2318,48 @@ public class InstructionExecutor {
         // Modes d'adressage
         switch (mode) {
             case IMMEDIATE:
-                // 8 bits pour A/B, 16 bits pour D/X/Y/S/U
+               
                 if (mnemonic.matches("LDD|LDX|LDY|LDS|LDU|ADDD|SUBD|CMPD|CMPX|CMPY|CMPS|CMPU")) {
-                    return 3; // opcode + 2 octets
+                    return 3; 
                 }
-                return 2; // opcode + 1 octet
+                return 2; 
 
             case DIRECT:
-                return 2; // opcode + 1 octet d'adresse
+                return 2; 
 
             case EXTENDED:
-                return 3; // opcode + 2 octets d'adresse
+                return 3;
 
             case INDEXED:
                 if (instr.indexedInfo != null) {
-                    int postByteSize = 1; // Le postbyte lui-même
+                    int postByteSize = 1; 
                     int offsetSize = InstructionDecoder.getOffsetByteCount(instr.indexedInfo);
-                    return 1 + postByteSize + offsetSize; // opcode + postbyte + offset
+                    return 1 + postByteSize + offsetSize; 
                 }
-                return 2; // Par défaut
+                return 2; 
 
             case INHERENT:
                 return 1;
 
             case RELATIVE:
-                return 2; // Déjà géré dans les branches
+                return 2; 
 
             default:
-                return 2; // Taille par défaut
+                return 2;
         }
     }
     public void setRomAddress(int address) {
         this.romAddress = address & 0xFFFF;
     }
 
-    /**
-     * Parse un déplacement signé 8 bits
-     * Exemple: "$FA" = -6, "$05" = +5
-     */
+  
     private int parseSignedDisplacement8(String operand) {
         try {
-            // Retirer le $ si présent
             String hexStr = operand.replace("$", "").replace("#", "");
             int value = Integer.parseInt(hexStr, 16) & 0xFF;
 
-            // Extension de signe pour 8 bits
             if ((value & 0x80) != 0) {
-                value = value - 0x100; // Ex: 0xFA = 250 → 250 - 256 = -6
+                value = value - 0x100; 
             }
             return value;
         } catch (NumberFormatException e) {
@@ -2755,17 +2368,14 @@ public class InstructionExecutor {
         }
     }
 
-    /**
-     * Parse un déplacement signé 16 bits
-     */
+
     private int parseSignedDisplacement16(String operand) {
         try {
             String hexStr = operand.replace("$", "").replace("#", "");
             int value = Integer.parseInt(hexStr, 16) & 0xFFFF;
 
-            // Extension de signe pour 16 bits
             if ((value & 0x8000) != 0) {
-                value = value - 0x10000; // Ex: 0xFFFA = 65530 → 65530 - 65536 = -6
+                value = value - 0x10000; 
             }
             return value;
         } catch (NumberFormatException e) {
