@@ -61,11 +61,11 @@ public class Editeur {
     }
 
     public void clearEditor() {
-        editorArea.setText("");
+        editorArea.setText(" ");
     }
 
     public void clearViewer() {
-        viewerArea.setText("");
+        viewerArea.setText(" ");
     }
 
     public void loadFromFile() {
