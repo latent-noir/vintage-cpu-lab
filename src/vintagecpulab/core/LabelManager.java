@@ -3,7 +3,7 @@ package vintagecpulab.core;
 import java.util.HashMap;
 import java.util.Map;
 
-/** LabelManager : Gestionnaire d'étiquettes pour l'assembleur 6809 */
+/* LabelManager : Gestionnaire d'étiquettes pour l'assembleur 6809 */
 public class LabelManager {
 
     private final Map<String, Integer> labels;
