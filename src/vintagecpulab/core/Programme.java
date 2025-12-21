@@ -8,12 +8,12 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/* Programme - Fenêtre de visualisation du programme assemblé */
+/* Programme : Fenêtre de visualisation du programme assemblé */
+
 public class Programme extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    // ═══════════ PALETTE THÈME SOMBRE VERT ═══════════
     private static final Color BG_DARK = new Color(20, 28, 20);
     private static final Color BG_DARKER = new Color(15, 22, 15);
     private static final Color GREEN_PRIMARY = new Color(80, 200, 120);
@@ -33,7 +33,7 @@ public class Programme extends JFrame {
     private JLabel statusLabel;
 
     public Programme() {
-        setTitle("⚡ Programme - Visualisation");
+        setTitle(" Programme - Visualisation");
         setAlwaysOnTop(true);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setBounds(600, 80, 280, 400);
@@ -229,7 +229,6 @@ public class Programme extends JFrame {
 
         System.out.println("\nProgramme.loadFromProgramManager() - Début");
 
-        // PRIORITÉ 1: Chercher ORG dans le code source
         for (String line : sourceLines) {
             line = line.trim();
 
@@ -254,7 +253,6 @@ public class Programme extends JFrame {
             }
         }
 
-        // PRIORITÉ 2: Si pas de ORG, utiliser le PC du CPU
         if (!orgFound && cpu != null) {
             address = cpu.getPC();
             System.out.println("Aucun ORG trouvé, utilisation du PC du CPU: $" +
@@ -265,7 +263,6 @@ public class Programme extends JFrame {
 
         int startAddress = address;
 
-        // Charger TOUTES les instructions (y compris END)
         for (String line : sourceLines) {
             line = line.trim();
 
@@ -273,38 +270,32 @@ public class Programme extends JFrame {
                 continue;
             }
 
-            // Ignorer ORG dans l'affichage (mais on l'a déjà traité)
             if (line.toUpperCase().startsWith("ORG")) {
                 continue;
             }
 
-            //Afficher END (ne plus break )
             String displayLine = line;
             String instructionPart = line;
 
-            // Gérer les étiquettes
             if (InstructionDecoder.hasLabel(line)) {
-                displayLine = line; // Garder l'étiquette pour l'affichage
+                displayLine = line; 
                 instructionPart = InstructionDecoder.removeLabel(line);
 
                 if (instructionPart.trim().isEmpty()) {
-                    continue; // Étiquette seule
+                    continue;
                 }
             }
 
-            // Format sans $
             String addrStr = String.format("%04X", address);
             addInstruction(addrStr, displayLine);
 
             System.out.println(String.format("   %s: %s", addrStr, displayLine));
 
-            //  Si c'est END, arrêter APRÈS l'avoir affiché
             if (line.toUpperCase().equals("END")) {
                 System.out.println(" END affiché et traité");
                 break;
             }
 
-            // Calculer la taille pour la prochaine instruction
             try {
                 InstructionDecoder.DecodedInstruction instr =
                         InstructionDecoder.decode(instructionPart);
