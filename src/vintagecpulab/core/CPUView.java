@@ -2,13 +2,12 @@ package vintagecpulab.core;
 import javax.swing.*;
 import java.awt.*;
 
-/* Classe CPUView - Vue graphique pour afficher l'état du CPU */
 public class CPUView extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
 
-    // Labels pour l'affichage
+    
     private JLabel lblPC;
     private JLabel lblInstruction;
     private JLabel lblS;
@@ -43,7 +42,7 @@ public class CPUView extends JFrame {
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
-        // Configuration des labels
+        
         lblPC = createRegisterLabel("FC00", 95, 15, 89, 26);
         lblInstruction = createRegisterLabel("", 13, 50, 202, 31);
         lblS = createRegisterLabel("0000", 40, 85, 70, 30);
@@ -54,7 +53,7 @@ public class CPUView extends JFrame {
         lblX = createRegisterLabel("0000", 30, 352, 76, 30);
         lblY = createRegisterLabel("0000", 145, 353, 76, 30);
 
-        // Flags
+        
         lblE = createFlagLabel("0", 92, 281, 13, 31);
         lblF = createFlagLabel("0", 105, 281, 13, 31);
         lblH = createFlagLabel("0", 117, 281, 13, 31);
@@ -64,7 +63,7 @@ public class CPUView extends JFrame {
         lblV = createFlagLabel("0", 169, 281, 13, 31);
         lblC = createFlagLabel("0", 182, 281, 13, 31);
 
-        // Image de fond
+        
         JLabel lblBackground = new JLabel();
         lblBackground.setIcon(new ImageIcon(getClass().getResource("UAL.png")));
         lblBackground.setBounds(2, 2, 210, 380);
@@ -89,9 +88,7 @@ public class CPUView extends JFrame {
         return label;
     }
 
-    //  MÉTHODES DE MISE À JOUR
 
-    /* Met à jour l'affichage complet depuis un objet CPU */
     public void updateFromCPU(CPU cpu) {
         lblPC.setText(CPU.decimalToHex(cpu.getPC(), 4));
         lblA.setText(CPU.decimalToHex(cpu.getA(), 2));
@@ -102,7 +99,6 @@ public class CPUView extends JFrame {
         lblU.setText(CPU.decimalToHex(cpu.getU(), 4));
         lblDP.setText(CPU.decimalToHex(cpu.getDP(), 2));
 
-        // Mise à jour des flags
         lblE.setText(cpu.getFlagE() ? "1" : "0");
         lblF.setText(cpu.getFlagF() ? "1" : "0");
         lblH.setText(cpu.getFlagH() ? "1" : "0");
