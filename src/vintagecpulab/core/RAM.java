@@ -11,13 +11,10 @@ import java.util.HashMap;
 public class RAM extends JFrame {
 
     private static final long serialVersionUID = 1L;
-
-    //  CONSTANTES DE CONFIGURATION
     private static final int RAM_START = 0x0000;
     private static final int RAM_END = 0x03FF;
     private static final int RAM_SIZE = 1024;
     private static final String DEFAULT_VALUE = "00";
-
     private static final Color BG_DARK = new Color(20, 20, 30);
     private static final Color BG_DARKER = new Color(15, 15, 25);
     private static final Color PANEL_BG = new Color(30, 35, 45);
@@ -29,13 +26,10 @@ public class RAM extends JFrame {
     private static final Color HEADER_BG = new Color(50, 60, 75);
     private static final Color GRID_COLOR = new Color(60, 70, 85);
     private static final Color SELECTION_BG = new Color(70, 130, 200, 50);
-
-    //  STOCKAGE DUAL (HashMap + JTable)
     private static final HashMap<Integer, String> memory = new HashMap<>();
     private final DefaultTableModel model;
     private final JTable table;
 
-    //  CONSTRUCTEUR
     public RAM() {
         setTitle("RAM - Mémoire Données");
         setAlwaysOnTop(true);
@@ -189,7 +183,6 @@ public class RAM extends JFrame {
         return panel;
     }
 
-    //  MÉTHODES PUBLIQUES
 
     public void write(int address, String value) {
         if (!isValidAddress(address)) {
