@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-//GESTIONNAIRE DE PROGRAMME
+/* ProgrammeManager : GESTIONNAIRE DE PROGRAMME */
 
 public class ProgramManager {
     private final CPU cpu;
@@ -19,7 +19,7 @@ public class ProgramManager {
     private int currentLine;
     private boolean programLoaded;
     private Stack<CPUState> stateHistory;
-    private static final int MAX_HISTORY = 1000;
+    private static final int MAX_HISTORY = 100;
 
 
     private static class CPUState {
@@ -80,17 +80,14 @@ public class ProgramManager {
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
 
-            // Ignorer lignes vides
             if (line.isEmpty()) {
                 continue;
             }
 
-            // Ignorer commentaires
             if (line.startsWith(";")) {
                 continue;
             }
 
-            // Supprimer commentaires en fin de ligne
             int commentIndex = line.indexOf(';');
             if (commentIndex > 0) {
                 line = line.substring(0, commentIndex).trim();
@@ -105,7 +102,6 @@ public class ProgramManager {
             return false;
         }
 
-        // Auto-ajout END si manquant
         String lastLine = programLines.get(programLines.size() - 1);
         if (!lastLine.equalsIgnoreCase("END")) {
             programLines.add("END");
@@ -122,10 +118,8 @@ public class ProgramManager {
     }
 
     // ASSEMBLAGE
-    // Ajoutez cette variable de classe dans ProgramManager
     private int lastAssembledBytes = 0;
 
-    // Ajoutez ce getter
     public int getLastAssembledBytes() {
         return lastAssembledBytes;
     }
@@ -150,7 +144,6 @@ public class ProgramManager {
                 // Ignorer commentaires et lignes vides
                 if (line.startsWith(";") || line.isEmpty()) continue;
 
-                // Supprimer commentaires en fin de ligne
                 int commentIndex = line.indexOf(';');
                 if (commentIndex > 0) {
                     line = line.substring(0, commentIndex).trim();
@@ -168,27 +161,25 @@ public class ProgramManager {
                     if (parts.length >= 2) {
                         currentAddress = CPU.hexToDecimal(parts[1]) & 0xFFFF;
                         executor.setRomAddress(currentAddress);
-                        System.out.println("ORG $" + CPU.decimalToHex(currentAddress, 4));
+                        System.out.println("🔄 ORG $" + CPU.decimalToHex(currentAddress, 4));
                     }
                     continue;
                 }
 
                 //  GESTION DES ÉTIQUETTES
-                // Cas 1: Étiquette seule sur une ligne (ex: "BOUCLE:")
                 if (line.endsWith(":")) {
-                    System.out.println("Étiquette seule: " + line);
+                    System.out.println("🏷️  Étiquette seule: " + line);
                     continue;
                 }
 
-                // Cas 2: Étiquette + instruction sur même ligne (ex: "BOUCLE: DECA")
                 String instruction = line;
                 if (line.contains(":")) {
                     String[] parts = line.split(":", 2);
                     if (parts.length == 2 && !parts[1].trim().isEmpty()) {
                         instruction = parts[1].trim();
-                        System.out.println(" " + parts[0].trim() + ": -> " + instruction);
+                        System.out.println("🏷️  " + parts[0].trim() + ": -> " + instruction);
                     } else {
-                        continue; // Étiquette seule
+                        continue; 
                     }
                 }
 
@@ -197,7 +188,7 @@ public class ProgramManager {
                         InstructionDecoder.decode(instruction);
 
                 if (instr == null) {
-                    System.out.println("Ligne ignorée: " + line);
+                    System.out.println("⚠️  Ligne ignorée: " + line);
                     continue;
                 }
 
@@ -228,7 +219,7 @@ public class ProgramManager {
                                 CPU.decimalToHex(disp & 0xFF, 2));
                     }
 
-                    System.out.println(" " + instr.operation + " -> " + label +
+                    System.out.println("🔄 " + instr.operation + " -> " + label +
                             " ($" + CPU.decimalToHex(targetAddr, 4) +
                             ") disp=" + disp);
                 }
@@ -250,7 +241,7 @@ public class ProgramManager {
             }
 
             lastAssembledBytes = executor.getRomAddress() - cpu.getPC();
-            System.out.println("\n Assemblage réussi: " + lastAssembledBytes + " octets");
+            System.out.println("\n✅ Assemblage réussi: " + lastAssembledBytes + " octets");
             return true;
 
         } catch (Exception e) {
@@ -259,7 +250,9 @@ public class ProgramManager {
         }
     }
 
-    /* Exécute tout le programme d'un coup, Continue jusqu'à rencontrer END, SWI ou la fin du programme */
+    /**
+      Exécute tout le programme d'un coup
+     **/
     public void runProgram() {
         if (!programLoaded) {
             showError("Aucun programme", "Chargez d'abord un programme");
@@ -284,7 +277,6 @@ public class ProgramManager {
                 currentLine++;
                 instructionCount++;
 
-                // éviter boucle infinie
                 if (instructionCount > 10000) {
                     showWarning("Limite atteinte",
                             "10000 instructions exécutées. Arrêt de sécurité.");
@@ -304,7 +296,9 @@ public class ProgramManager {
         }
     }
 
-    /* Exécute une seule ligne (mode pas à pas) , Sauvegarde l'état actuel dans l'historique pour permettre stepBack() */
+    /**
+      Exécute une seule ligne (mode pas à pas)
+     */
     public boolean step() {
         if (!programLoaded) {
             showError("Aucun programme", "Chargez d'abord un programme");
@@ -318,7 +312,6 @@ public class ProgramManager {
 
         String line = programLines.get(currentLine);
 
-        // Vérifier END/SWI
         if (line.equalsIgnoreCase("END") ||
                 line.toUpperCase().startsWith("SWI")) {
             showInfo("Programme terminé", "Instruction de fin rencontrée");
@@ -326,16 +319,10 @@ public class ProgramManager {
         }
 
         try {
-            // Sauvegarder état AVANT exécution
             saveState();
-
-            // Exécuter
             executeLine(line);
             currentLine++;
-
-            // Mettre à jour affichage
             updateDisplay();
-
             return true;
 
         } catch (Exception e) {
@@ -346,7 +333,9 @@ public class ProgramManager {
         }
     }
 
-    /* Revient en arrière d'une instruction */
+    /**
+      Revient en arrière d'une instruction
+     */
     public boolean stepBack() {
         if (stateHistory.isEmpty()) {
             showWarning("Début du programme",
@@ -355,11 +344,9 @@ public class ProgramManager {
         }
 
         try {
-            // Restaurer état précédent
             CPUState previousState = stateHistory.pop();
             previousState.restore(cpu);
             currentLine = previousState.lineNumber;
-
             updateDisplay();
             showInfo("Retour arrière",
                     String.format("État restauré à la ligne %d", currentLine + 1));
@@ -374,7 +361,9 @@ public class ProgramManager {
     }
 
 
-    /* Réinitialise complètement l'exécution */
+    /**
+      Réinitialise complètement l'exécution
+     */
     public void reset() {
         cpu.reset();
         currentLine = 0;
@@ -386,9 +375,8 @@ public class ProgramManager {
         }
     }
 
-    /* Exécute une ligne de code */
+
     private void executeLine(String line) throws Exception {
-        // Décoder l'instruction
         InstructionDecoder.DecodedInstruction instr =
                 InstructionDecoder.decode(line);
 
@@ -396,30 +384,25 @@ public class ProgramManager {
             throw new Exception("Impossible de décoder l'instruction");
         }
 
-        // Exécuter via InstructionExecutor
         executor.execute(instr);
 
-        // Mettre à jour PC (calcul correct de la taille)
         int instructionSize = executor.computeInstructionSize(instr);
         cpu.setPC((cpu.getPC() + instructionSize) & 0xFFFF);
     }
 
-    /* Sauvegarde l'état actuel du CPU dans l'historique */
+
     private void saveState() {
-        // Limiter la taille de l'historique
         if (stateHistory.size() >= MAX_HISTORY) {
-            stateHistory.remove(0); // Supprimer le plus ancien
+            stateHistory.remove(0); 
         }
 
         stateHistory.push(new CPUState(cpu, currentLine));
     }
 
-    /* Met à jour l'affichage de la vue CPU */
+    
     private void updateDisplay() {
         if (cpuView != null) {
             cpuView.updateFromCPU(cpu);
-
-            // Afficher l'instruction courante
             if (currentLine < programLines.size()) {
                 cpuView.setInstruction(programLines.get(currentLine));
             } else {
@@ -430,14 +413,12 @@ public class ProgramManager {
         }
     }
 
-    //Efface complètement la ROM
     private void clearROM() {
         for (int i = 0; i < romModel.getRowCount(); i++) {
             romModel.setValueAt("FF", i, 1);
         }
     }
 
-    //Écrit un octet dans la ROM
     public void writeROM(int address, int value) {
         try {
             if (address >= 0 && address < romModel.getRowCount()) {
@@ -468,17 +449,14 @@ public class ProgramManager {
     }
 
 
-    /* @return Une copie de la liste des lignes du programme */
     public List<String> getProgramLines() {
         return new ArrayList<>(programLines);
     }
 
-    /* @return true si un programme est chargé */
     public boolean isProgramLoaded() {
         return programLoaded;
     }
 
-    /* @return L'executor d'instructions associé */
     public InstructionExecutor getExecutor() {
         return executor;
     }
@@ -490,7 +468,7 @@ public class ProgramManager {
         }
 
         labelManager.clear();
-        int currentAddress = cpu.getPC(); // Adresse de départ
+        int currentAddress = cpu.getPC(); 
 
         System.out.println(" Début collection étiquettes, PC initial: $" +
                 CPU.decimalToHex(currentAddress, 4));
@@ -498,56 +476,44 @@ public class ProgramManager {
         for (int i = 0; i < programLines.size(); i++) {
             String line = programLines.get(i);
 
-            // Ignorer les lignes vides
             if (line.trim().isEmpty()) continue;
 
-            // Ignorer les commentaires
             if (line.trim().startsWith(";")) continue;
 
-            // Supprimer les commentaires en fin de ligne
             int commentIndex = line.indexOf(';');
             if (commentIndex > 0) {
                 line = line.substring(0, commentIndex).trim();
             }
 
-            // Ignorer les directives END
             if (line.equalsIgnoreCase("END")) {
-                System.out.println("Directive END trouvée, fin de collecte");
+                System.out.println("🏁 Directive END trouvée, fin de collecte");
                 break;
             }
 
-            // Vérifier si la ligne contient une étiquette
             String label = InstructionDecoder.extractLabel(line);
             if (label != null && !label.isEmpty()) {
-                // Enregistrer l'étiquette avec son adresse
                 labelManager.addLabel(label, currentAddress);
-                System.out.println("Étiquette: " + label +
+                System.out.println("✅ Étiquette: " + label +
                         " @ $" + CPU.decimalToHex(currentAddress, 4));
             }
 
-            // Si ce n'est pas une directive ORG, calculer la taille
             if (!line.toUpperCase().startsWith("ORG")) {
-                // Enlever l'étiquette pour décoder l'instruction
                 String instructionOnly = InstructionDecoder.removeLabel(line);
 
                 if (!instructionOnly.trim().isEmpty() &&
                         !instructionOnly.trim().equalsIgnoreCase("END")) {
 
-                    // Décoder l'instruction
                     InstructionDecoder.DecodedInstruction instr =
                             InstructionDecoder.decode(instructionOnly);
 
                     if (instr != null) {
-                        // Calculer la taille de l'instruction
                         int size = executor.computeInstructionSize(instr);
                         currentAddress += size;
                     } else {
-                        // Pour les directives simples (FCB, FDB, etc.)
-                        currentAddress += 1; // Taille par défaut
+                        currentAddress += 1; 
                     }
                 }
             } else {
-                // Directive ORG: changer l'adresse courante
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 2) {
                     String hexAddr = parts[1].replace("$", "").replace("#", "");
@@ -564,6 +530,6 @@ public class ProgramManager {
         System.out.println(" Collection terminée. " +
                 labelManager.getLabelCount() + " étiquettes.");
 
-        return labelManager.getLabelCount() >= 0; // Toujours vrai
+        return labelManager.getLabelCount() >= 0; 
     }
 }
