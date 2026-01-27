@@ -1,46 +1,48 @@
 package vintagecpulab.core;
 
-/* InstructionDecoder - Décodeur d'instructions pour Motorola 6809 */
+/**
+ * InstructionDecoder - Décodeur d'instructions pour Motorola 6809
+ */
 
 public class InstructionDecoder {
-
+    
     public enum AddressingMode {
-        IMMEDIATE,          
-        DIRECT,            
-        EXTENDED,          
-        EXTENDED_INDIRECT,  
-        INDEXED,            
-        INHERENT,          
-        RELATIVE            
+        IMMEDIATE,
+        DIRECT,
+        EXTENDED,
+        EXTENDED_INDIRECT,
+        INDEXED,
+        INHERENT,
+        RELATIVE
     }
+
 
     public enum IncrementMode {
-        NONE,           
-        POST_INC_1,    
-        POST_INC_2,     
-        PRE_DEC_1,      
-        PRE_DEC_2       
+        NONE,
+        POST_INC_1,
+        POST_INC_2,
+        PRE_DEC_1,
+        PRE_DEC_2
     }
 
-    
     public enum OffsetType {
-        NONE,           
-        CONSTANT_5BIT,  
-        CONSTANT_8BIT,  
-        CONSTANT_16BIT, 
-        ACCUMULATOR_A,  
-        ACCUMULATOR_B,  
-        ACCUMULATOR_D   
+        NONE,
+        CONSTANT_5BIT,
+        CONSTANT_8BIT,
+        CONSTANT_16BIT,
+        ACCUMULATOR_A,
+        ACCUMULATOR_B,
+        ACCUMULATOR_D
     }
+
 
     public static class DecodedInstruction {
-        public final String operation;           
-        public final AddressingMode mode;        
-        public final String operand;             
-        public final char targetRegister;        
-        public final IndexedDetails indexedInfo; 
-        public final DirectDetails directInfo;   
-
+        public final String operation;
+        public final AddressingMode mode;
+        public final String operand;
+        public final char targetRegister;
+        public final IndexedDetails indexedInfo;
+        public final DirectDetails directInfo;
         public DecodedInstruction(String operation, AddressingMode mode, String operand) {
             this(operation, mode, operand, null, null);
         }
@@ -77,10 +79,11 @@ public class InstructionDecoder {
         }
     }
 
+
     public static class IndexedDetails {
-        public final String indexRegister;      
-        public final String offset;             
-        public final boolean isIndirect;        
+        public final String indexRegister;      // X, Y, U, S
+        public final String offset;             // Offset numérique ou registre
+        public final boolean isIndirect;        // [...] forme indirecte
         public final IncrementMode incrementMode;
         public final OffsetType offsetType;
 
@@ -100,16 +103,17 @@ public class InstructionDecoder {
         }
     }
 
+
     public static class DirectDetails {
-        public final String offsetByte;         
-        public final boolean forceDirect;       
+        public final String offsetByte;         // Octet d'offset (00-FF)
+        public final boolean forceDirect;       // Force le mode direct (<$XX)
 
         public DirectDetails(String offsetByte, boolean forceDirect) {
             this.offsetByte = offsetByte.toUpperCase();
             this.forceDirect = forceDirect;
         }
 
-        
+
         public String calculateFullAddress(String currentDP) {
             return currentDP + offsetByte;
         }
@@ -123,20 +127,28 @@ public class InstructionDecoder {
     public static DecodedInstruction decode(String line) {
         if (line == null) return null;
 
+        // Normalisation
         line = line.trim();
         if (line.isEmpty()) return null;
 
+        // Retirer les commentaires
         int commentIndex = line.indexOf(';');
         if (commentIndex >= 0) {
             line = line.substring(0, commentIndex).trim();
         }
         if (line.isEmpty()) return null;
 
+        // Ignorer les étiquettes
         if (line.endsWith(":")) return null;
 
         String[] parts = line.split("\\s+", 2);
         String mnemonic = parts[0].toUpperCase();
         String operandRaw = (parts.length > 1) ? parts[1].trim() : "";
+
+
+        if (isStackInstruction(mnemonic)) {
+            return new DecodedInstruction(mnemonic, AddressingMode.INHERENT, operandRaw);
+        }
 
         if (isBranchInstruction(mnemonic)) {
             return new DecodedInstruction(mnemonic, AddressingMode.RELATIVE, operandRaw);
@@ -147,34 +159,28 @@ public class InstructionDecoder {
         }
 
 
-
-        // IMMEDIATE:
         if (operandRaw.startsWith("#")) {
             String cleanOperand = extractHexValue(operandRaw.substring(1));
             return new DecodedInstruction(mnemonic, AddressingMode.IMMEDIATE, cleanOperand);
         }
 
-        // DIRECT:
         if (operandRaw.startsWith("<")) {
             String cleanOperand = extractHexValue(operandRaw.substring(1));
             DirectDetails details = new DirectDetails(cleanOperand, true);
             return new DecodedInstruction(mnemonic, AddressingMode.DIRECT, cleanOperand, null, details);
         }
 
-        // EXTENDED:
         if (operandRaw.startsWith(">")) {
             String cleanOperand = extractHexValue(operandRaw.substring(1));
             return new DecodedInstruction(mnemonic, AddressingMode.EXTENDED, cleanOperand);
         }
 
-        // EXTENDED_INDIRECT:
         if (operandRaw.startsWith("[") && operandRaw.endsWith("]") && !operandRaw.contains(",")) {
             String inside = operandRaw.substring(1, operandRaw.length() - 1).trim();
             String cleanOperand = extractHexValue(inside);
             return new DecodedInstruction(mnemonic, AddressingMode.EXTENDED_INDIRECT, cleanOperand);
         }
 
-        // INDEXED: 
         if (operandRaw.contains(",")) {
             return decodeIndexed(mnemonic, operandRaw);
         }
@@ -191,6 +197,7 @@ public class InstructionDecoder {
     private static DecodedInstruction decodeIndexed(String mnemonic, String operandRaw) {
         String operand = operandRaw.replaceAll("\\s+", "").toUpperCase();
 
+        // Détecter si indirect [...]
         boolean isIndirect = false;
         if (operand.startsWith("[") && operand.endsWith("]")) {
             isIndirect = true;
@@ -260,6 +267,7 @@ public class InstructionDecoder {
         return new DecodedInstruction(mnemonic, AddressingMode.INDEXED, operandRaw, details);
     }
 
+
     public static int calculatePostByte(IndexedDetails details) {
         if (details == null) return 0x00;
 
@@ -281,11 +289,11 @@ public class InstructionDecoder {
         switch (details.offsetType) {
             case NONE:
                 switch (details.incrementMode) {
-                    case POST_INC_1:  postByte |= 0x80; break; 
-                    case POST_INC_2:  postByte |= 0x81; break; 
-                    case PRE_DEC_1:   postByte |= 0x82; break; 
-                    case PRE_DEC_2:   postByte |= 0x83; break; 
-                    case NONE:        postByte |= 0x84; break; 
+                    case POST_INC_1:  postByte |= 0x80; break; // ,R+
+                    case POST_INC_2:  postByte |= 0x81; break; // ,R++
+                    case PRE_DEC_1:   postByte |= 0x82; break; // ,-R
+                    case PRE_DEC_2:   postByte |= 0x83; break; // ,--R
+                    case NONE:        postByte |= 0x84; break; // ,R
                 }
                 break;
 
@@ -318,6 +326,7 @@ public class InstructionDecoder {
         return postByte & 0xFF;
     }
 
+
     public static int getOffsetByteCount(IndexedDetails details) {
         if (details == null) return 0;
 
@@ -340,7 +349,6 @@ public class InstructionDecoder {
         }
     }
 
-
     public static boolean canUseDirect(String targetAddress, String currentDP) {
         if (targetAddress == null || currentDP == null) return false;
 
@@ -352,7 +360,12 @@ public class InstructionDecoder {
         return targetDP.equalsIgnoreCase(currentDP);
     }
 
-
+    private static boolean isStackInstruction(String mnemonic) {
+        return mnemonic.equals("PSHS") ||
+                mnemonic.equals("PULS") ||
+                mnemonic.equals("PSHU") ||
+                mnemonic.equals("PULU");
+    }
 
     private static String extractIndexRegister(String registerPart) {
         String reg = registerPart.replaceAll("[+\\-]", "").trim();
@@ -417,18 +430,20 @@ public class InstructionDecoder {
 
         String cleaned = line.trim();
 
+
         if (cleaned.contains(":")) {
             return true;
         }
+
 
         String[] parts = cleaned.split("\\s+", 2);
         if (parts.length < 2) return false;
 
         String firstWord = parts[0].toUpperCase();
 
+
         String[] keywords = {
                 "ORG", "END", "FCB", "FDB", "FCC", "RMB",
-
                 "LDA", "LDB", "LDD", "LDX", "LDY", "LDS", "LDU",
                 "STA", "STB", "STD", "STX", "STY", "STS", "STU",
 
@@ -482,7 +497,6 @@ public class InstructionDecoder {
         String[] parts = cleaned.split("\\s+", 2);
         return parts[0].toUpperCase();
     }
-
     public static String removeLabel(String line) {
         if (line == null || !hasLabel(line)) return line;
 
