@@ -1,29 +1,29 @@
 package vintagecpulab.core;
 
-
+/* Classe CPU : Modèle pur du microprocesseur 6809 */
 public class CPU {
 
-    private int PC = 0xFC00;
-    private int X = 0;
-    private int Y = 0;
-    private int S = 0;
-    private int U = 0;
-    private int DP = 0;
-    private int A = 0;
-    private int B = 0;
-    private int CC = 0x04;
+    private int PC = 0xFC00;  
+    private int X = 0;       
+    private int Y = 0;       
+    private int S = 0;        
+    private int U = 0;        
+    private int DP = 0;      
+    private int A = 0;       
+    private int B = 0;       
+    private int CC = 0x04;   
 
-
-    public static final int C_FLAG = 0x01;
-    public static final int V_FLAG = 0x02;
-    public static final int Z_FLAG = 0x04;
-    public static final int N_FLAG = 0x08;
+    
+    public static final int C_FLAG = 0x01;  
+    public static final int V_FLAG = 0x02;  
+    public static final int Z_FLAG = 0x04;  
+    public static final int N_FLAG = 0x08;  
     public static final int I_FLAG = 0x10;  
     public static final int H_FLAG = 0x20;  
     public static final int F_FLAG = 0x40;  
     public static final int E_FLAG = 0x80;  
 
-    
+
     public int getPC() {
         return PC;
     }
@@ -105,7 +105,6 @@ public class CPU {
         CC = cc & 0xFF;
     }
 
-    //    GESTION FLAGS
     public void setFlag(int flag, boolean value) {
         if (value) {
             CC |= flag;
@@ -117,7 +116,6 @@ public class CPU {
     public boolean getFlag(int flag) {
         return (CC & flag) != 0;
     }
-
 
     public boolean getFlagC() { return getFlag(C_FLAG); }
     public boolean getFlagV() { return getFlag(V_FLAG); }
@@ -137,7 +135,7 @@ public class CPU {
     public void setFlagF(boolean value) { setFlag(F_FLAG, value); }
     public void setFlagE(boolean value) { setFlag(E_FLAG, value); }
 
-    
+   
     public static int hexToDecimal(String hex) {
         try {
             return Integer.parseInt(hex, 16);
@@ -155,7 +153,7 @@ public class CPU {
     }
 
     public void reset() {
-        PC = 0xFC00;    
+        PC = 0xFC00;    // COMMENCE À L'ADRESSE ROM
         X = 0;
         Y = 0;
         S = 0;
@@ -163,9 +161,9 @@ public class CPU {
         DP = 0;
         A = 0;
         B = 0;
-        CC = 0x04;      
+        CC = 0x04;    
     }
-
+    
 
     @Override
     public String toString() {
