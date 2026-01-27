@@ -2,17 +2,19 @@ package vintagecpulab.core;
 
 import javax.swing.table.DefaultTableModel;
 
-/* EXÉCUTEUR D'INSTRUCTIONS MOTOROLA 6809 */
+/**
+ * EXÉCUTEUR D'INSTRUCTIONS MOTOROLA 6809
+ */
 public class InstructionExecutor {
 
-    
+
     private final CPU cpu;
     private  final LabelManager labelManager;
     private final DefaultTableModel ramModel;
     private final DefaultTableModel romModel;
-    private int romAddress = 0; 
+    private int romAddress = 0;
 
-    
+
     public InstructionExecutor(CPU cpu, DefaultTableModel ramModel, DefaultTableModel romModel) {
         this.cpu = cpu;
         this.ramModel = ramModel;
@@ -20,7 +22,7 @@ public class InstructionExecutor {
         this.labelManager = new LabelManager();
     }
 
-    
+
 
     public void execute(InstructionDecoder.DecodedInstruction instr) {
         if (instr == null) {
@@ -101,7 +103,7 @@ public class InstructionExecutor {
             case "ASRA" -> execASRA();
             case "ASRB" -> execASRB();
             case "ASR" -> execASR(mode, operand);
-            case "LSLA" -> execASLA(); 
+            case "LSLA" -> execASLA();
             case "LSLB" -> execASLB();
             case "LSL" -> execASL(mode, operand);
             case "LSRA" -> execLSRA();
@@ -168,7 +170,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    
+
     private void execLDB(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand8(mode, operand);
         cpu.setB(value & 0xFF);
@@ -195,7 +197,7 @@ public class InstructionExecutor {
         cpu.setFlagV(false);
     }
 
-    
+
     private void execLDY(InstructionDecoder.AddressingMode mode, String operand) {
         int value = readOperand16(mode, operand);
         cpu.setY(value & 0xFFFF);
@@ -301,7 +303,7 @@ public class InstructionExecutor {
     private void execLEAS(String operand) {
         int ea = resolveIndexedAddress(operand);
         cpu.setS(ea & 0xFFFF);
-       
+
     }
 
     private void execLEAU(String operand) {
@@ -642,7 +644,7 @@ public class InstructionExecutor {
         cpu.setFlagV(value == 0x7F);
     }
 
-  private void execCLRA() {
+    private void execCLRA() {
         cpu.setA(0);
         cpu.setFlagZ(true);
         cpu.setFlagN(false);
@@ -904,7 +906,7 @@ public class InstructionExecutor {
     private void execBRA(String operand) {
         int displacement = parseSignedDisplacement8(operand);
         int pc = cpu.getPC();
-        int target = (pc + 2 + displacement) & 0xFFFF; 
+        int target = (pc + 2 + displacement) & 0xFFFF;
         cpu.setPC(target);
     }
 
@@ -921,7 +923,7 @@ public class InstructionExecutor {
         if (!cpu.getFlagZ()) {
             int displacement = parseSignedDisplacement8(operand);
             int pc = cpu.getPC();
-            int target = (pc + 2 + displacement) & 0xFFFF; 
+            int target = (pc + 2 + displacement) & 0xFFFF;
             cpu.setPC(target);
         }
     }
@@ -1041,25 +1043,25 @@ public class InstructionExecutor {
     private void execLBRA(String operand) {
         int displacement = parseSignedDisplacement16(operand);
         int pc = cpu.getPC();
-        int target = (pc + 3 + displacement) & 0xFFFF; 
+        int target = (pc + 3 + displacement) & 0xFFFF;
         cpu.setPC(target);
     }
 
     private void execLBSR(String operand) {
         int displacement = parseSignedDisplacement16(operand);
         int pc = cpu.getPC();
-        int target = (pc + 3 + displacement) & 0xFFFF; 
+        int target = (pc + 3 + displacement) & 0xFFFF;
         int s = cpu.getS();
-        s = pushWord(s, pc + 3); 
+        s = pushWord(s, pc + 3);
         cpu.setS(s);
         cpu.setPC(target);
     }
     private void execBSR(String operand) {
         int displacement = parseSignedDisplacement8(operand);
         int pc = cpu.getPC();
-        int target = (pc + 2 + displacement) & 0xFFFF; 
+        int target = (pc + 2 + displacement) & 0xFFFF;
         int s = cpu.getS();
-        s = pushWord(s, pc + 2); 
+        s = pushWord(s, pc + 2);
         cpu.setS(s);
         cpu.setPC(target);
     }
@@ -1109,17 +1111,51 @@ public class InstructionExecutor {
         int mask = parseRegisterMask(operand);
         int s = cpu.getS();
 
-        if ((mask & 0x80) != 0) s = pushWord(s, cpu.getPC());
-        if ((mask & 0x40) != 0) s = pushWord(s, cpu.getU());
-        if ((mask & 0x20) != 0) s = pushWord(s, cpu.getY());
-        if ((mask & 0x10) != 0) s = pushWord(s, cpu.getX());
-        if ((mask & 0x08) != 0) s = pushByte(s, cpu.getDP());
-        if ((mask & 0x04) != 0) s = pushByte(s, cpu.getB());
-        if ((mask & 0x02) != 0) s = pushByte(s, cpu.getA());
-        if ((mask & 0x01) != 0) s = pushByte(s, cpu.getCC());
+        if ((mask & 0x80) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getPC() & 0xFF);
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, (cpu.getPC() >> 8) & 0xFF);
+        }
+        if ((mask & 0x40) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getU() & 0xFF);
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, (cpu.getU() >> 8) & 0xFF);
+        }
+        if ((mask & 0x20) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getY() & 0xFF);
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, (cpu.getY() >> 8) & 0xFF);
+        }
+        if ((mask & 0x10) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getX() & 0xFF);
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, (cpu.getX() >> 8) & 0xFF);
+        }
+        if ((mask & 0x08) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getDP() & 0xFF);
+        }
+        if ((mask & 0x04) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getB() & 0xFF);
+        }
+        if ((mask & 0x02) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getA() & 0xFF);
+        }
+        if ((mask & 0x01) != 0) {
+            s = (s - 1) & 0xFFFF;
+            writeMemoryByte(s, cpu.getCC() & 0xFF);
+        }
 
         cpu.setS(s);
     }
+
+
 
     private void execPSHU(String operand) {
         int mask = parseRegisterMask(operand);
@@ -1142,43 +1178,48 @@ public class InstructionExecutor {
         int s = cpu.getS();
 
         if ((mask & 0x01) != 0) {
-            cpu.setCC(pullByte(s));
+            cpu.setCC(readMemoryByte(s) & 0xFF);
             s = (s + 1) & 0xFFFF;
         }
-
         if ((mask & 0x02) != 0) {
-            cpu.setA(pullByte(s));
+            cpu.setA(readMemoryByte(s) & 0xFF);
             s = (s + 1) & 0xFFFF;
         }
-
         if ((mask & 0x04) != 0) {
-            cpu.setB(pullByte(s));
+            cpu.setB(readMemoryByte(s) & 0xFF);
             s = (s + 1) & 0xFFFF;
         }
-
         if ((mask & 0x08) != 0) {
-            cpu.setDP(pullByte(s));
+            cpu.setDP(readMemoryByte(s) & 0xFF);
             s = (s + 1) & 0xFFFF;
         }
-
         if ((mask & 0x10) != 0) {
-            cpu.setX(pullWord(s));
-            s = (s + 2) & 0xFFFF; 
+            int xh = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            int xl = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            cpu.setX(((xh << 8) | xl) & 0xFFFF);
         }
-
         if ((mask & 0x20) != 0) {
-            cpu.setY(pullWord(s));
-            s = (s + 2) & 0xFFFF;
+            int yh = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            int yl = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            cpu.setY(((yh << 8) | yl) & 0xFFFF);
         }
-
         if ((mask & 0x40) != 0) {
-            cpu.setU(pullWord(s));
-            s = (s + 2) & 0xFFFF;
+            int uh = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            int ul = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            cpu.setU(((uh << 8) | ul) & 0xFFFF);
         }
-
         if ((mask & 0x80) != 0) {
-            cpu.setPC(pullWord(s));
-            s = (s + 2) & 0xFFFF;
+            int pch = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            int pcl = readMemoryByte(s) & 0xFF;
+            s = (s + 1) & 0xFFFF;
+            cpu.setPC(((pch << 8) | pcl) & 0xFFFF);
         }
 
         cpu.setS(s);
@@ -1219,7 +1260,7 @@ public class InstructionExecutor {
         }
 
         if ((mask & 0x40) != 0) {
-            cpu.setS(pullWord(u)); 
+            cpu.setS(pullWord(u));
             u = (u + 2) & 0xFFFF;
         }
 
@@ -1302,27 +1343,21 @@ public class InstructionExecutor {
     }
 
     private void execNOP() {
-        // Ne fait rien
     }
 
     private void execSWI() {
-        // TODO: Implémenter interruption logicielle
     }
 
     private void execSWI2() {
-        // TODO: Implémenter SWI2
     }
 
     private void execSWI3() {
-        // TODO: Implémenter SWI3
     }
 
     private void execCWAI(String operand) {
-        // TODO: Implémenter CWAI
     }
 
     private void execSYNC() {
-        // TODO: Implémenter SYNC
     }
 
     private void execORG(String operand) {
@@ -1330,6 +1365,7 @@ public class InstructionExecutor {
     }
 
     public void emitToROM(InstructionDecoder.DecodedInstruction instr) {
+        int startAddress = romAddress; 
         int[] opcodes = getOpcodeSequence(instr);
         for (int opcode : opcodes) {
             writeOpcodeToROM(opcode);
@@ -1339,44 +1375,78 @@ public class InstructionExecutor {
             case IMMEDIATE -> {
                 char reg = instr.targetRegister;
                 if (reg == 'D' || reg == 'X' || reg == 'Y' || reg == 'S' || reg == 'U') {
-                    writeOperandBytesToROM(CPU.hexToDecimal(instr.operand) & 0xFFFF, 2);
+                    int value = CPU.hexToDecimal(instr.operand) & 0xFFFF;
+                    writeOpcodeToROM((value >> 8) & 0xFF);  
+                    writeOpcodeToROM(value & 0xFF);        
                 } else {
-                    writeOperandBytesToROM(CPU.hexToDecimal(instr.operand) & 0xFF, 1);
+                    writeOpcodeToROM(CPU.hexToDecimal(instr.operand) & 0xFF);
                 }
             }
-            case DIRECT -> writeOperandBytesToROM(CPU.hexToDecimal(instr.operand) & 0xFF, 1);
-            case EXTENDED, EXTENDED_INDIRECT -> writeOperandBytesToROM(CPU.hexToDecimal(instr.operand) & 0xFFFF, 2);
+
+            case DIRECT -> {
+                writeOpcodeToROM(CPU.hexToDecimal(instr.operand) & 0xFF);
+            }
+
+            case EXTENDED, EXTENDED_INDIRECT -> {
+                int value = CPU.hexToDecimal(instr.operand) & 0xFFFF;
+                writeOpcodeToROM((value >> 8) & 0xFF);  
+                writeOpcodeToROM(value & 0xFF);         
+            }
+
             case INDEXED -> {
                 if (instr.indexedInfo != null) {
                     int postByte = InstructionDecoder.calculatePostByte(instr.indexedInfo);
                     writeOpcodeToROM(postByte);
-
                     int offsetBytes = InstructionDecoder.getOffsetByteCount(instr.indexedInfo);
-                    if (offsetBytes > 0 && instr.indexedInfo.offset != null) {
-                        String offset = instr.indexedInfo.offset.replace("$", "");
-                        int offsetValue = Integer.parseInt(offset, 16);
-                        writeOperandBytesToROM(offsetValue, offsetBytes);
+                    if (offsetBytes > 0 && instr.indexedInfo.offset != null && !instr.indexedInfo.offset.isEmpty()) {
+                        String offset = instr.indexedInfo.offset.replace("$", "").replace("#", "");
+
+                        try {
+                            int offsetValue = Integer.parseInt(offset, 16);
+
+                            if (offsetBytes == 2) {
+                                writeOpcodeToROM((offsetValue >> 8) & 0xFF);  
+                                writeOpcodeToROM(offsetValue & 0xFF);         
+                            } else if (offsetBytes == 1) {
+                                writeOpcodeToROM(offsetValue & 0xFF);
+                            }
+                        } catch (NumberFormatException e) {
+                        }
                     }
                 }
             }
-            case RELATIVE -> {
-                int target = CPU.hexToDecimal(instr.operand) & 0xFFFF;
-                int currentPC = romAddress;
-                int displacement = target - currentPC;
 
-                if (instr.operation.startsWith("L")) {
-                    writeOperandBytesToROM(displacement & 0xFFFF, 2);
-                } else {
-                    writeOperandBytesToROM(displacement & 0xFF, 1);
+            case RELATIVE -> {
+                String mnemonic = instr.operation.toUpperCase();
+                int instructionSize = computeInstructionSize(instr);
+                int target = CPU.hexToDecimal(instr.operand) & 0xFFFF;
+                int nextPC = (startAddress + instructionSize) & 0xFFFF;
+                int displacement = target - nextPC;
+
+                if (mnemonic.startsWith("LB")) {
+                    displacement = displacement & 0xFFFF;
+                    writeOpcodeToROM((displacement >> 8) & 0xFF);  
+                    writeOpcodeToROM(displacement & 0xFF);         
+                }
+                else {
+                    displacement = displacement & 0xFF;
+                    writeOpcodeToROM(displacement);
                 }
             }
+
             case INHERENT -> {
                 String m = instr.operation.toUpperCase();
+
                 if (m.equals("PSHS") || m.equals("PSHU") || m.equals("PULS") || m.equals("PULU")) {
                     int mask = parseRegisterMask(instr.operand);
                     writeOpcodeToROM(mask);
-                } else if (m.equals("ORCC") || m.equals("ANDCC")) {
-                    writeOperandBytesToROM(CPU.hexToDecimal(instr.operand) & 0xFF, 1);
+                }
+                else if (m.equals("ORCC") || m.equals("ANDCC")) {
+                    writeOpcodeToROM(CPU.hexToDecimal(instr.operand) & 0xFF);
+                }
+                else if (m.equals("TFR") || m.equals("EXG")) {
+                    int postByte = encodeRegisterPairPostByte(instr.operand);
+                    writeOpcodeToROM(postByte);
                 }
             }
         }
@@ -1393,14 +1463,18 @@ public class InstructionExecutor {
     private void writeOpcodeToROM(int opcode) {
         try {
             if (romAddress >= 0 && romAddress < romModel.getRowCount()) {
-                romModel.setValueAt(CPU.decimalToHex(opcode & 0xFF, 2), romAddress, 1);
+                String hexValue = CPU.decimalToHex(opcode & 0xFF, 2);
+                romModel.setValueAt(hexValue, romAddress, 1);
+            } else {
+                System.err.printf("Adresse ROM hors limites: %04X%n", romAddress);
             }
         } catch (Exception e) {
-            System.err.println("Erreur écriture ROM @" + romAddress + ": " + e.getMessage());
+            System.err.printf(" Erreur ROM @%04X: %s%n", romAddress, e.getMessage());
         } finally {
             romAddress = (romAddress + 1) & 0xFFFF;
         }
     }
+
 
     private void writeOperandBytesToROM(int value, int bytes) {
         if (bytes == 2) {
@@ -1840,7 +1914,7 @@ public class InstructionExecutor {
             case "CWAI" -> new int[]{0x3C};
             case "SYNC" -> new int[]{0x13};
 
-            default -> new int[]{0x12}; 
+            default -> new int[]{0x12};
         };
     }
 
@@ -1904,7 +1978,7 @@ public class InstructionExecutor {
         writeMemoryByte(address, (value >> 8) & 0xFF);
         writeMemoryByte((address + 1) & 0xFFFF, value & 0xFF);
     }
-    
+
     private int readOperand8(InstructionDecoder.AddressingMode mode, String operand) {
         return switch (mode) {
             case IMMEDIATE -> CPU.hexToDecimal(operand) & 0xFF;
@@ -1929,7 +2003,7 @@ public class InstructionExecutor {
         };
     }
 
-   
+
     private int readOperand16(InstructionDecoder.AddressingMode mode, String operand) {
         return switch (mode) {
             case IMMEDIATE -> CPU.hexToDecimal(operand) & 0xFFFF;
@@ -2044,7 +2118,7 @@ public class InstructionExecutor {
         } else if (offsetStr.equals("A")) {
             int aValue = cpu.getA();
             if ((aValue & 0x80) != 0) {
-                aValue |= 0xFFFFFF00; // Extension de signe
+                aValue |= 0xFFFFFF00; 
             }
             effectiveAddress = (baseAddress + aValue) & 0xFFFF;
 
@@ -2068,22 +2142,18 @@ public class InstructionExecutor {
 
             try {
                 if (offsetStr.contains("$") || offsetStr.matches("^[0-9A-Fa-f]+$")) {
-                    // Hexadécimal
                     offset = Integer.parseInt(cleanOffset, 16);
                 } else {
-                    // Décimal
                     offset = Integer.parseInt(cleanOffset);
                 }
 
                 if (cleanOffset.length() <= 2) {
-                    // Offset 8-bit SIGNÉ
                     if (offset >= 0x80) {
                         offset = offset - 0x100;
                     }
                 } else if (cleanOffset.length() <= 4) {
-                    // Offset 16-bit SIGNÉ (-32768 à +32767)
                     if (offset >= 0x8000) {
-                        offset = offset - 0x10000; // Extension de signe 16→32 bits
+                        offset = offset - 0x10000; 
                     }
                 }
 
@@ -2097,13 +2167,12 @@ public class InstructionExecutor {
             }
         }
         if (indirect) {
-            // L'adresse calculée est un pointeur vers l'adresse réelle
             effectiveAddress = readMemoryWord(effectiveAddress);
         }
 
         return effectiveAddress & 0xFFFF;
     }
-   
+
     private void updateIndexRegister(String register, int newValue) {
         int value = newValue & 0xFFFF;
         switch (register) {
@@ -2151,99 +2220,99 @@ public class InstructionExecutor {
 
     private int pushWord(int sp, int value) {
         sp = (sp - 1) & 0xFFFF;
-        writeMemoryByte(sp, (value >> 8) & 0xFF);  // MSB
+        writeMemoryByte(sp, (value >> 8) & 0xFF);  
 
         sp = (sp - 1) & 0xFFFF;
-        writeMemoryByte(sp, value & 0xFF);         // LSB
+        writeMemoryByte(sp, value & 0xFF);          
 
         return sp;
     }
 
 
-  
+
     private int pullByte(int sp) {
         return readMemoryByte(sp) & 0xFF;
     }
 
-   
+
     private int pullWord(int sp) {
         int high = readMemoryByte(sp) & 0xFF;
         int low = readMemoryByte((sp + 1) & 0xFFFF) & 0xFF;
         return ((high << 8) | low) & 0xFFFF;
     }
 
-    
+
     private int parseRegisterMask(String operand) {
         operand = operand.replaceAll("\\s*,\\s*", ",").trim();
-        if (operand == null || operand.trim().isEmpty()) {
-            throw new IllegalArgumentException("Opérande vide pour PSHS/PULS/PSHU/PULU");
-        }
-        operand = operand.trim();
-        if (operand.startsWith("$") || operand.startsWith("#")) {
-            String hex = operand
-                    .replace("#", "")
-                    .replace("$", "")
-                    .trim();
 
-            try {
-                int value = Integer.parseInt(hex, 16);
-                return value & 0xFF;
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(
-                        "Format hexadécimal invalide: " + operand
-                );
-            }
+        if (operand.startsWith("$") || operand.startsWith("#")) {
+            String hex = operand.replace("#", "").replace("$", "").trim();
+            return Integer.parseInt(hex, 16) & 0xFF;
         }
 
         int mask = 0;
-
         String[] regs = operand.toUpperCase().split(",");
 
         for (String reg : regs) {
             reg = reg.trim();
+            if (reg.isEmpty()) continue;
 
-            if (reg.isEmpty()) {
+            if (reg.equals("D")) {
+                mask |= 0x06;
                 continue;
             }
 
             int regBit = switch (reg) {
-                case "CC", "CCR" -> 0x01;  
-                case "A" -> 0x02;          
-                case "B" -> 0x04;          
-                case "D" -> 0x06;
-                case "DP" -> 0x08;         
-                case "X" -> 0x10;          
-                case "Y" -> 0x20;          
-                case "U" -> 0x40;        
-                case "S" -> 0x40;          
-                case "PC" -> 0x80;       
-                default -> {
-                    throw new IllegalArgumentException(
-                            "Registre d'index invalide: " + reg +
-                                    "\nRegistres valides: CC, A, B, D, DP, X, Y, U, S, PC"
-                    );
-                }
+                case "CC", "CCR" -> 0x01;
+                case "A" -> 0x02;
+                case "B" -> 0x04;
+                case "DP" -> 0x08;
+                case "X" -> 0x10;
+                case "Y" -> 0x20;
+                case "U", "S" -> 0x40;
+                case "PC" -> 0x80;
+                default -> throw new IllegalArgumentException("Registre invalide: " + reg);
             };
 
             mask |= regBit;
         }
 
-        if (mask == 0) {
-            throw new IllegalArgumentException(
-                    "Aucun registre valide trouvé dans: " + operand
-            );
-        }
-
         return mask;
     }
+
+    private int encodeRegisterPairPostByte(String operand) {
+        String[] regs = operand.toUpperCase().split(",");
+        if (regs.length != 2) {
+            throw new IllegalArgumentException("TFR/EXG nécessite 2 registres");
+        }
+
+        int source = getRegisterCode(regs[0].trim());
+        int dest = getRegisterCode(regs[1].trim());
+
+        return ((source << 4) | dest) & 0xFF;
+    }
+
+    private int getRegisterCode(String reg) {
+        return switch (reg) {
+            case "D" -> 0x00;
+            case "X" -> 0x01;
+            case "Y" -> 0x02;
+            case "U" -> 0x03;
+            case "S" -> 0x04;
+            case "PC" -> 0x05;
+            case "A" -> 0x08;
+            case "B" -> 0x09;
+            case "CC", "CCR" -> 0x0A;
+            case "DP" -> 0x0B;
+            default -> throw new IllegalArgumentException("Registre invalide: " + reg);
+        };
+    }
+
 
     public void registerLabel(String name, int address) {
         labelManager.addLabel(name, address);
     }
 
-    /**
-     * Obtient le gestionnaire d'étiquettes
-     */
     public LabelManager getLabelManager() {
         return labelManager;
     }
@@ -2278,7 +2347,7 @@ public class InstructionExecutor {
 
             if (address == null) {
                 throw new IllegalArgumentException(
-                        "Étiquette non définie: " + op
+                        "  Étiquette non définie: " + op
                 );
             }
 
@@ -2288,82 +2357,106 @@ public class InstructionExecutor {
         return operand;
     }
 
+    private int getOpcodeSize(String mnemonic, InstructionDecoder.AddressingMode mode) {
+        if (mnemonic.matches("LDY|STY|CMPY|LDS|STS|CMPS|SWI2") ||
+                (mnemonic.equals("CMPD") && mode != InstructionDecoder.AddressingMode.IMMEDIATE)) {
+            return 2;
+        }
+
+        if (mnemonic.matches("CMPU|SWI3")) {
+            return 2;
+        }
+
+        return 1;
+    }
+
 
     public int computeInstructionSize(InstructionDecoder.DecodedInstruction instr) {
         if (instr == null) return 0;
 
-        String mnemonic = instr.operation;
+        String mnemonic = instr.operation.toUpperCase();
         InstructionDecoder.AddressingMode mode = instr.mode;
 
-        if (mnemonic.matches("NOP|RTS|RTI|SWI|INCA|INCB|DECA|DECB|CLRA|CLRB|COMA|COMB|NEGA|NEGB|ASLA|ASLB|ASRA|ASRB|LSLA|LSLB|LSRA|LSRB|ROLA|ROLB|RORA|RORB|DAA|SEX|ABX|MUL")) {
+        if (mnemonic.matches("NOP|RTS|RTI|SWI|ABX|DAA|SEX|MUL|" +
+                "INCA|INCB|DECA|DECB|CLRA|CLRB|TSTA|TSTB|" +
+                "COMA|COMB|NEGA|NEGB|" +
+                "ASLA|ASLB|ASRA|ASRB|LSLA|LSLB|LSRA|LSRB|" +
+                "ROLA|ROLB|RORA|RORB")) {
             return 1;
         }
 
-        if (mnemonic.matches("PSHS|PULS|PSHU|PULU")) {
+        if (mnemonic.matches("PSHS|PULS|PSHU|PULU|TFR|EXG|ORCC|ANDCC|CWAI|SWI2|SWI3|SYNC")) {
             return 2;
         }
 
-        if (mnemonic.matches("TFR|EXG")) {
+        if (mnemonic.matches("BRA|BRN|BEQ|BNE|BCC|BCS|BHS|BLO|" +
+                "BPL|BMI|BVC|BVS|BGT|BLE|BGE|BLT|BHI|BLS|BSR")) {
             return 2;
         }
 
-        if (mnemonic.matches("BRA|BRN|BEQ|BNE|BCC|BCS|BPL|BMI|BVC|BVS|BGT|BLE|BGE|BLT|BHI|BLS|BSR")) {
-            return 2;
-        }
-
-        if (mnemonic.matches("LBRA|LBSR|LBEQ|LBNE|LBCC|LBCS|LBPL|LBMI|LBVC|LBVS|LBGT|LBLE|LBGE|LBLT|LBHI|LBLS")) {
+        if (mnemonic.matches("LBRA|LBSR|LBRN|LBEQ|LBNE|LBCC|LBCS|" +
+                "LBPL|LBMI|LBVC|LBVS|LBGT|LBLE|LBGE|LBLT|LBHI|LBLS")) {
             return 3;
         }
 
-        // Modes d'adressage
+        if (mnemonic.matches("LEAX|LEAY|LEAS|LEAU")) {
+            if (instr.indexedInfo != null) {
+                int offsetBytes = InstructionDecoder.getOffsetByteCount(instr.indexedInfo);
+                return 1 + 1 + offsetBytes;
+            }
+            return 2;
+        }
+
+
+        int opcodeSize = getOpcodeSize(mnemonic, mode);
+
         switch (mode) {
-            case IMMEDIATE:
-               
-                if (mnemonic.matches("LDD|LDX|LDY|LDS|LDU|ADDD|SUBD|CMPD|CMPX|CMPY|CMPS|CMPU")) {
-                    return 3; 
+            case IMMEDIATE -> {
+                if (mnemonic.matches("LDD|LDX|LDY|LDS|LDU|" +
+                        "ADDD|SUBD|CMPD|CMPX|CMPY|CMPS|CMPU")) {
+                    return opcodeSize + 2;
                 }
-                return 2; 
+                return opcodeSize + 1;
+            }
 
-            case DIRECT:
-                return 2; 
+            case DIRECT -> {
+                return opcodeSize + 1;
+            }
 
-            case EXTENDED:
-                return 3;
+            case EXTENDED, EXTENDED_INDIRECT -> {
+                return opcodeSize + 2;
+            }
 
-            case INDEXED:
+            case INDEXED -> {
                 if (instr.indexedInfo != null) {
-                    int postByteSize = 1; 
+                    int postByteSize = 1;
                     int offsetSize = InstructionDecoder.getOffsetByteCount(instr.indexedInfo);
-                    return 1 + postByteSize + offsetSize; 
+                    return opcodeSize + postByteSize + offsetSize;
                 }
-                return 2; 
+                return opcodeSize + 1;
+            }
 
-            case INHERENT:
-                return 1;
-
-            case RELATIVE:
-                return 2; 
-
-            default:
-                return 2;
+            default -> {
+                return opcodeSize + 1;
+            }
         }
     }
+
     public void setRomAddress(int address) {
         this.romAddress = address & 0xFFFF;
     }
 
-  
+
     private int parseSignedDisplacement8(String operand) {
         try {
             String hexStr = operand.replace("$", "").replace("#", "");
             int value = Integer.parseInt(hexStr, 16) & 0xFF;
 
             if ((value & 0x80) != 0) {
-                value = value - 0x100; 
+                value = value - 0x100;
             }
             return value;
         } catch (NumberFormatException e) {
-            System.err.println("Erreur parsing déplacement 8 bits: " + operand);
             return 0;
         }
     }
@@ -2375,13 +2468,29 @@ public class InstructionExecutor {
             int value = Integer.parseInt(hexStr, 16) & 0xFFFF;
 
             if ((value & 0x8000) != 0) {
-                value = value - 0x10000; 
+                value = value - 0x10000;
             }
             return value;
         } catch (NumberFormatException e) {
-            System.err.println("Erreur parsing déplacement 16 bits: " + operand);
             return 0;
         }
     }
-}
+   
+    public boolean validateInstructionEmission(InstructionDecoder.DecodedInstruction instr) {
+        int startAddr = romAddress;
+        int expectedSize = computeInstructionSize(instr);
 
+        emitToROM(instr);
+
+        int actualSize = romAddress - startAddr;
+
+        if (expectedSize != actualSize) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+   
+}
