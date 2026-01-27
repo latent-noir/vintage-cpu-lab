@@ -2,12 +2,13 @@ package vintagecpulab.core;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Classe CPUView :  Vue graphique pour afficher l'état du CPU
+ */
 public class CPUView extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
-
-    
     private JLabel lblPC;
     private JLabel lblInstruction;
     private JLabel lblS;
@@ -36,13 +37,11 @@ public class CPUView extends JFrame {
         setTitle("ARCHITECTURE INTERNE DU 6809");
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setBounds(70, 200, 300, 500);
-
         contentPane = new JPanel();
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
-        
         lblPC = createRegisterLabel("FC00", 95, 15, 89, 26);
         lblInstruction = createRegisterLabel("", 13, 50, 202, 31);
         lblS = createRegisterLabel("0000", 40, 85, 70, 30);
@@ -52,8 +51,6 @@ public class CPUView extends JFrame {
         lblDP = createRegisterLabel("00", 45, 281, 46, 30);
         lblX = createRegisterLabel("0000", 30, 352, 76, 30);
         lblY = createRegisterLabel("0000", 145, 353, 76, 30);
-
-        
         lblE = createFlagLabel("0", 92, 281, 13, 31);
         lblF = createFlagLabel("0", 105, 281, 13, 31);
         lblH = createFlagLabel("0", 117, 281, 13, 31);
@@ -63,7 +60,7 @@ public class CPUView extends JFrame {
         lblV = createFlagLabel("0", 169, 281, 13, 31);
         lblC = createFlagLabel("0", 182, 281, 13, 31);
 
-        
+        // Image de fond
         JLabel lblBackground = new JLabel();
         lblBackground.setIcon(new ImageIcon(getClass().getResource("UAL.png")));
         lblBackground.setBounds(2, 2, 210, 380);
@@ -88,7 +85,7 @@ public class CPUView extends JFrame {
         return label;
     }
 
-
+    
     public void updateFromCPU(CPU cpu) {
         lblPC.setText(CPU.decimalToHex(cpu.getPC(), 4));
         lblA.setText(CPU.decimalToHex(cpu.getA(), 2));
@@ -128,7 +125,7 @@ public class CPUView extends JFrame {
         lblH.setText("0");
         lblI.setText("0");
         lblN.setText("0");
-        lblZ.setText("1");
+        lblZ.setText("0");
         lblV.setText("0");
         lblC.setText("0");
     }
