@@ -1,3 +1,4 @@
+
 package vintagecpulab.core;
 
 import javax.swing.*;
@@ -33,6 +34,7 @@ public class Editeur {
         bottom.add(closeBtn);
         editorFrame.add(bottom, BorderLayout.SOUTH);
 
+        // Viewer
         viewerFrame = new JFrame("Programme - Visualisation");
         viewerFrame.setSize(600, 500);
         viewerFrame.setLayout(new BorderLayout());
@@ -61,11 +63,11 @@ public class Editeur {
     }
 
     public void clearEditor() {
-        editorArea.setText(" ");
+        editorArea.setText("");
     }
 
     public void clearViewer() {
-        viewerArea.setText(" ");
+        viewerArea.setText("");
     }
 
     public void loadFromFile() {
