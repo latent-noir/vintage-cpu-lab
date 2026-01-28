@@ -146,7 +146,8 @@ public class ROM extends JFrame {
                 "0x%04X → 0x%04X • %d bytes",
                 ROM_START, ROM_END, ROM_SIZE
         ));
-        infoLabel.setFont(new Font("JetBrains Mono", Font.BOLD, 9)); 
+
+        infoLabel.setFont(new Font("JetBrains Mono", Font.BOLD, 9));
         infoLabel.setForeground(TEXT_ORANGE);
         panel.add(infoLabel);
 
