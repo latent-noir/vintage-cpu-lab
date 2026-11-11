@@ -1,4 +1,4 @@
-# Vintage CPU Lab
+# 🕹️ Vintage CPU Lab — 8-bit Processor Simulator
 
 ## Overview
 This repository contains an academic research project focused on the design and implementation
